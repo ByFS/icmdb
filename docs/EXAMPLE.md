@@ -1,5 +1,7 @@
 # CMDB 示例数据文档
 
+> English version: [en/EXAMPLE.md](en/EXAMPLE.md)
+
 > 采集器推送格式与完整示例。接口细节见 [API.md](./API.md)。
 > 示例 JSON 文件:`tests/data/collector_example_full.json`(可直接用 curl 推送)。
 
