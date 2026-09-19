@@ -13,44 +13,44 @@
     "virt": "kvm"
   },
   "mgmt": {
-    "mac": "AA:BB:CC:DD:EE:01",
-    "ip": "192.168.10.101",
+    "mac": "02:00:00:00:00:01",
+    "ip": "192.0.2.11",
     "prefix_length": 24
   },
   "hardware": {
-    "chassis_serial_number": "SN0000000001",
+    "chassis_serial_number": "DEMO-SN-0001",
     "nics": [
       {
         "name": "eth0",
-        "mac": "AA:BB:CC:DD:EE:02",
+        "mac": "02:00:00:00:00:02",
         "ips": [
           {
-            "ip": "10.10.1.101",
+            "ip": "198.51.100.11",
             "prefix_length": 24
           }
         ]
       },
       {
         "name": "eth1",
-        "mac": "AA:BB:CC:DD:EE:03",
+        "mac": "02:00:00:00:00:03",
         "ips": [
           {
-            "ip": "10.10.2.101",
+            "ip": "198.51.100.13",
             "prefix_length": 24
           }
         ]
       },
       {
         "name": "eth2",
-        "mac": "AA:BB:CC:DD:EE:04",
+        "mac": "02:00:00:00:00:04",
         "ips": []
       },
       {
         "name": "eth3",
-        "mac": "AA:BB:CC:DD:EE:05",
+        "mac": "02:00:00:00:00:05",
         "ips": [
           {
-            "ip": "10.10.4.101",
+            "ip": "198.51.100.16",
             "prefix_length": 24
           }
         ]
