@@ -65,6 +65,7 @@ const cidr = ref('')
 const job = ref<ScanJob | null>(null)
 const scanning = ref(false)
 let pollTimer: ReturnType<typeof setTimeout> | null = null
+let stopped = false
 
 async function start() {
   const target = cidr.value.trim()
@@ -81,6 +82,7 @@ async function start() {
 }
 
 async function poll(jobId: string) {
+  if (stopped) return
   try {
     job.value = await api.getScan(jobId)
   } catch (e) {
@@ -88,6 +90,8 @@ async function poll(jobId: string) {
     scanning.value = false
     return
   }
+  // the view may have been unmounted while the request was in flight
+  if (stopped) return
   if (job.value.status === 'running') {
     pollTimer = setTimeout(() => poll(jobId), 1000)
   } else {
@@ -96,6 +100,7 @@ async function poll(jobId: string) {
 }
 
 onUnmounted(() => {
+  stopped = true
   if (pollTimer) clearTimeout(pollTimer)
 })
 </script>
