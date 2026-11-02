@@ -1,8 +1,8 @@
 # CMDB v2
 
-CMDB(CMDB v2)—— 采集推送、字段级 diff 冲突裁决、存储与展示。
+CMDB(CMDB v2)—— 采集推送、字段级 diff 冲突裁决、存储与展示
 
-链路:采集(外部 shell)→ JSON → CMDB API → CMDB 存储 → UI 展示。系统只管存储和查询,不做采集。
+链路:采集(iagent,同仓库 `iagent/` 子目录)→ JSON → CMDB API → CMDB 存储 → UI 展示。服务端只管存储和查询,采集代码在 `iagent/` 子目录,与后端同仓库一起开发
 
 ## 设计决策
 
@@ -25,6 +25,7 @@ CMDB(CMDB v2)—— 采集推送、字段级 diff 冲突裁决、存储与展示
 
 - 后端:Python FastAPI + SQLite(SQLModel ORM)
 - 前端:Vue 3 + TS + Element Plus(构建产物由 FastAPI 托管,单服务单端口)
+- 采集客户端:Go(单文件 one-shot),位于 `iagent/` 子目录
 
 ## 快速开始
 
@@ -35,10 +36,13 @@ uv run uvicorn cmdb.main:app --port 8080
 
 # 前端 dev(另开终端,/api 代理到 8080)
 cd web/frontend && npm install && npm run dev
+
+# 采集客户端(iagent,Go,同仓库 iagent/ 目录)
+cd iagent && CGO_ENABLED=0 go build -ldflags "-X main.version=0.1.0" -o dist/iagent-0.1.0 ./cmd/iagent
 ```
 
 生产部署:前端 `npm run build` 后产物输出到 `src/cmdb/static`,由 FastAPI 托管,
-只需启动后端一个服务。
+只需启动后端一个服务
 
 数据库备份:`scripts/backup_db.py` 用 `VACUUM INTO` 生成一致性快照到 `backups/`,
 保留最近 14 份,可挂 cron 每日执行:

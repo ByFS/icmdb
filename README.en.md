@@ -2,7 +2,7 @@
 
 CMDB (CMDB v2) — collection push, field-level diff conflict resolution, storage and display.
 
-Pipeline: collection (external shell) → JSON → CMDB API → CMDB storage → UI display. The system only handles storage and queries; it does not do collection.
+Pipeline: collection (iagent, in-repo `iagent/` subdirectory) → JSON → CMDB API → CMDB storage → UI display. This directory only handles storage and queries; the collection code lives in the `iagent/` subdirectory.
 
 ## Design Decisions
 
@@ -25,6 +25,7 @@ Core trade-offs, confirmed item by item:
 
 - Backend: Python FastAPI + SQLite (SQLModel ORM)
 - Frontend: Vue 3 + TS + Element Plus (the build output is served by FastAPI — one service, one port)
+- Collector: Go (single-file one-shot), in the `iagent/` subdirectory
 
 ## Quick Start
 
@@ -35,6 +36,9 @@ uv run uvicorn cmdb.main:app --port 8080
 
 # Frontend dev (in another terminal, /api proxied to 8080)
 cd web/frontend && npm install && npm run dev
+
+# Collector (iagent, Go, in-repo iagent/ directory)
+cd iagent && CGO_ENABLED=0 go build -ldflags "-X main.version=0.1.0" -o dist/iagent-0.1.0 ./cmd/iagent
 ```
 
 Production deployment: after `npm run build`, the frontend output goes to `src/cmdb/static` and is served by FastAPI,
