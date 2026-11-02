@@ -25,6 +25,7 @@
 - [用户管理](#10-用户管理)
 - [操作审计](#11-操作审计)
 - [API 密钥](#12-api-密钥)
+- [网段扫描](#13-网段扫描)
 
 ---
 
@@ -628,6 +629,44 @@ curl -X POST http://<host>:8080/api/v1/devices \
 ```bash
 curl -H "X-API-Key: cmdb_你的密钥" http://<host>:8080/api/v1/devices
 ```
+
+## 13. 网段扫描
+
+扫描指定网段内的存活主机并与现有 CMDB 设备对比(仅 admin):
+
+- 纯 Python 实现:TCP connect 探测存活 + 内核 ARP 缓存读 MAC + 反向 DNS,无需 root
+- **仅支持本机直连网段**(非直连诚实拒绝:网关可能应答所有连接导致存活误报,且 MAC 是二层地址不会跨路由);错误信息会带上当前可扫网段
+- 扫描为**后台任务**:发起后立即返回 job_id,前端轮询进度;结果不入库,服务重启丢失
+- 网段过大限制:最多 65536 个地址
+
+### `POST /api/v1/scans`
+
+```json
+{"cidr": "192.168.1.0/24"}
+```
+
+返回 `{"job_id": "..."}`;CIDR 非法返回 422,非直连网段返回 400。
+
+### `GET /api/v1/scans/{job_id}`
+
+```json
+{
+  "job_id": "...", "cidr": "192.168.1.0/24",
+  "status": "running", "scanned": 128, "total": 254,
+  "hosts": [],
+  "error": null
+}
+```
+
+`status` 为 `running` / `done` / `error`;扫描完成后 `hosts` 为发现的存活主机列表:
+
+```json
+{"ip": "192.168.1.10", "mac": "AA:BB:CC:DD:EE:01", "hostname": "demo-node-01",
+ "known": true, "device_id": 3, "device_hostname": "demo-node-01"}
+```
+
+- `known`:该 IP 已在 CMDB(按管理 IP 或网卡 IP 匹配),带 `device_id` / `device_hostname`;`false` 表示未入库
+- 模拟数据
 
 ## 附:配置项(环境变量)
 

@@ -330,4 +330,27 @@ export const api = {
   createApiKey: (name: string) => request<ApiKey>(`${BASE}/api-keys`, json('POST', { name })),
 
   deleteApiKey: (id: number) => request<{ ok: boolean }>(`${BASE}/api-keys/${id}`, { method: 'DELETE' }),
+
+  startScan: (cidr: string) => request<{ job_id: string }>(`${BASE}/scans`, json('POST', { cidr })),
+
+  getScan: (jobId: string) => request<ScanJob>(`${BASE}/scans/${jobId}`),
+}
+
+export interface ScanHost {
+  ip: string
+  mac: string | null
+  hostname: string | null
+  known: boolean
+  device_id: number | null
+  device_hostname: string | null
+}
+
+export interface ScanJob {
+  job_id: string
+  cidr: string
+  status: 'running' | 'done' | 'error'
+  scanned: number
+  total: number
+  hosts: ScanHost[]
+  error: string | null
 }
