@@ -23,7 +23,8 @@ func parseMemorySlots(out string) []payload.MemorySlot {
 		fields := parseColonFields(block)
 		size := fields["Size"]
 		if size == "" || strings.Contains(size, "No Module") {
-			continue // skip empty slots
+			// skip empty slots
+			continue
 		}
 		slot := payload.MemorySlot{
 			Slot:         strPtr(fields["Locator"]),

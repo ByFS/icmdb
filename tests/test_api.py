@@ -192,7 +192,8 @@ def test_resolve_discard(client):
     assert r.status_code == 200
 
     device = client.get("/api/v1/devices/1").json()
-    assert device["mgmt_ip"] == "192.0.2.11"  # original value kept
+    # original value kept
+    assert device["mgmt_ip"] == "192.0.2.11"
 
 
 def test_change_history(client):
@@ -283,7 +284,8 @@ def test_tags(client):
     client.post("/api/v1/devices", json=make_push(hostname="demo-node-02"))
     client.put("/api/v1/devices/2/tags", json={"tags": ["生产基地"]})
     r = client.get("/api/v1/devices", params={"tag": "生产"})
-    assert r.json()["total"] == 1  # only devices whose tag is exactly "生产" match
+    # only devices whose tag is exactly "生产" match
+    assert r.json()["total"] == 1
 
 
 def test_import_csv_preserves_last_pushed_at(client):
@@ -420,7 +422,8 @@ def test_import_csv_skips_malformed_rows(client):
     )
     body = r.json()
     assert body["created"] == 1
-    assert len(body["errors"]) == 1  # the row missing hostname is recorded in errors
+    # the row missing hostname is recorded in errors
+    assert len(body["errors"]) == 1
     assert "hostname" in body["errors"][0]
 
 

@@ -24,7 +24,8 @@ type OS struct {
 	Type     string  `json:"type"`
 	Version  *string `json:"version"`
 	Kernel   *string `json:"kernel"`
-	Virt     *string `json:"virt"` // bare_metal or virtualization type (kvm/vmware/qemu/xen...)
+	// bare_metal or virtualization type (kvm/vmware/qemu/xen...)
+	Virt     *string `json:"virt"`
 }
 
 // Mgmt holds out-of-band management port info

@@ -28,7 +28,8 @@ def get_offline_threshold_hours(session: Session) -> int:
     return app_settings.offline_threshold_days * 24
 
 
-_API_KEY_CACHE_TTL = 5.0  # seconds; without invalidation a toggle takes effect within this window
+# seconds; without invalidation a toggle takes effect within this window
+_API_KEY_CACHE_TTL = 5.0
 _api_key_cache: tuple[bool, float] | None = None
 
 

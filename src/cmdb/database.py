@@ -64,7 +64,8 @@ def migrate(engine) -> None:
             existing = {
                 row[1] for row in conn.exec_driver_sql(f"PRAGMA table_info({table})")
             }
-            if not existing:  # table doesn't exist yet, create_all will create it with the new columns
+            # table doesn't exist yet, create_all will create it with the new columns
+            if not existing:
                 continue
             for col, ddl in cols.items():
                 if col not in existing:
@@ -106,7 +107,8 @@ def _migrate_tags_column(conn) -> None:
 def _migrate_disk_size(conn) -> None:
     """Add a normalized size_gb column to the old disk table and backfill (TB converted at 1024)"""
     cols = {row[1] for row in conn.exec_driver_sql("PRAGMA table_info(disk)")}
-    if "size_gb" in cols or not cols:  # fresh databases get it from create_all; skip when the table doesn't exist
+    # fresh databases get it from create_all; skip when the table doesn't exist
+    if "size_gb" in cols or not cols:
         return
     conn.exec_driver_sql("ALTER TABLE disk ADD COLUMN size_gb INTEGER")
     conn.exec_driver_sql(
@@ -118,7 +120,8 @@ def _migrate_disk_size(conn) -> None:
 def _migrate_memory_size(conn) -> None:
     """Add size/size_unit columns to the old memoryslot table and backfill from size_gb (old data is all GB)"""
     cols = {row[1] for row in conn.exec_driver_sql("PRAGMA table_info(memoryslot)")}
-    if "size" in cols or not cols:  # fresh databases get them from create_all; skip when the table doesn't exist
+    # fresh databases get them from create_all; skip when the table doesn't exist
+    if "size" in cols or not cols:
         return
     conn.exec_driver_sql("ALTER TABLE memoryslot ADD COLUMN size INTEGER")
     conn.exec_driver_sql("ALTER TABLE memoryslot ADD COLUMN size_unit VARCHAR")

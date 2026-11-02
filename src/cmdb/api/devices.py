@@ -473,7 +473,8 @@ def export_csv(session: Session = Depends(get_session)):
                 " | ".join(gpu_parts),
             ]
         )
-    content = "\ufeff" + buf.getvalue()  # UTF-8 BOM, Excel Chinese-compatible
+    # UTF-8 BOM, Excel Chinese-compatible
+    content = "\ufeff" + buf.getvalue()
     return Response(
         content=content,
         media_type="text/csv; charset=utf-8",
@@ -547,7 +548,8 @@ async def import_csv(
 
     The row format matches the export and can be re-imported directly; source is marked as csv_import
     """
-    text = (await file.read()).decode("utf-8-sig")  # BOM compatible
+    # BOM compatible
+    text = (await file.read()).decode("utf-8-sig")
     reader = csv.DictReader(io.StringIO(text))
     summary = {"created": 0, "unchanged": 0, "diff_created": 0, "errors": []}
 
@@ -555,7 +557,7 @@ async def import_csv(
         row_no = reader.line_num
         hostname = (row.get("hostname") or "").strip()
         if not hostname:
-            summary["errors"].append(f"第 {row_no} 行:缺 hostname,已跳过")
+            summary["errors"].append(f"第 {row_no} 行: 缺 hostname,已跳过")
             continue
         push = DevicePush(
             # CSV represents the device's full state (agent.full_sync defaults to True)

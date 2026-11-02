@@ -15,7 +15,8 @@ type lsblkJSON struct {
 		Type   string  `json:"type"`
 		Model  *string `json:"model"`
 		Size   *int64  `json:"size"`
-		Rota   *bool   `json:"rota"` // lsblk -J outputs booleans
+		// lsblk -J outputs booleans
+		Rota   *bool   `json:"rota"`
 	} `json:"blockdevices"`
 }
 

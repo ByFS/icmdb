@@ -157,7 +157,8 @@ def _run_scan(job_id: str, cidr: str) -> None:
 
         job["hosts"] = hosts
         job["status"] = "done"
-    except Exception as e:  # noqa: BLE001 - the job carries the failure to the poller
+    # noqa: BLE001 - the job carries the failure to the poller
+    except Exception as e:
         job["status"] = "error"
         job["error"] = str(e)
 
@@ -170,13 +171,13 @@ def start_scan(body: ScanIn) -> dict:
     except ValueError:
         raise HTTPException(status_code=422, detail="Invalid CIDR")
     if network.num_addresses > MAX_ADDRESSES:
-        raise HTTPException(status_code=400, detail="网段过大,最多扫描 65536 个地址")
+        raise HTTPException(status_code=400, detail="网段过大, 最多扫描 65536 个地址")
     connected = _directly_connected()
     if not any(network.subnet_of(c) for c in connected):
         allowed = ", ".join(str(c) for c in connected) or "无"
         raise HTTPException(
             status_code=400,
-            detail=f"仅支持扫描本机直连网段,当前可扫: {allowed}",
+            detail=f"仅支持扫描本机直连网段, 当前可扫: {allowed}",
         )
 
     job_id = secrets.token_hex(8)

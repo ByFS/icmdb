@@ -15,9 +15,12 @@ var ErrNoServerURL = errors.New("server_url is required")
 
 type Config struct {
 	ServerURL string        `yaml:"server_url"`
-	Token     string        `yaml:"token"`    // reserved, wired in once icmdb auth is ready
-	Interval  time.Duration `yaml:"interval"` // push interval, used to generate the systemd timer
-	Timeout   time.Duration `yaml:"timeout"`  // HTTP timeout
+	// reserved, wired in once icmdb auth is ready
+	Token     string        `yaml:"token"`
+	// push interval, used to generate the systemd timer
+	Interval  time.Duration `yaml:"interval"`
+	// HTTP timeout
+	Timeout   time.Duration `yaml:"timeout"`
 }
 
 // Load loads configuration. Empty path skips the file; CLI flags override the

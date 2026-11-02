@@ -18,7 +18,8 @@ def main() -> None:
     BACKUP_DIR.mkdir(exist_ok=True)
     dest = BACKUP_DIR / f"cmdb-{datetime.now():%Y%m%d-%H%M}.db"
     src = sqlite3.connect(DB)
-    src.execute("VACUUM INTO ?", (str(dest),))  # consistent snapshot, includes -wal content
+    # consistent snapshot, includes -wal content
+    src.execute("VACUUM INTO ?", (str(dest),))
     src.close()
     cutoff = datetime.now() - timedelta(days=KEEP)
     for f in BACKUP_DIR.glob("cmdb-*.db"):

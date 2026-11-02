@@ -60,7 +60,8 @@ export function fullRows(obj: Record<string, unknown> | null): { key: string; la
   const rows: { key: string; label: string; value: string }[] = []
   for (const [k, v] of Object.entries(obj)) {
     if (v === null || v === undefined || v === '') continue
-    if (k === 'size_unit') continue // folded into size display
+    // folded into size display
+    if (k === 'size_unit') continue
     if (k === 'size') {
       rows.push({ key: k, label: fieldLabel(k), value: `${v}${obj.size_unit ?? ''}` })
       continue
