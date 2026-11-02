@@ -144,6 +144,8 @@ def get_engine_cached():
 
 def seed_admin(engine) -> None:
     """Seed an admin account from environment config when the users table is empty"""
+    import secrets
+
     from cmdb.api.auth import hash_password
     from cmdb.config import settings
     from cmdb.models import User
@@ -151,10 +153,19 @@ def seed_admin(engine) -> None:
     with Session(engine) as session:
         if session.exec(select(User)).first() is not None:
             return
+        password = settings.admin_password
+        if not password:
+            # No CMDB_ADMIN_PASSWORD configured: generate one and surface it once
+            password = secrets.token_urlsafe(12)
+            print(
+                f"[cmdb] users table empty, created admin '{settings.admin_user}' "
+                f"with generated password: {password}",
+                flush=True,
+            )
         session.add(
             User(
                 username=settings.admin_user,
-                password_hash=hash_password(settings.admin_password),
+                password_hash=hash_password(password),
                 role="admin",
             )
         )

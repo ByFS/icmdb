@@ -3,18 +3,22 @@
 Usage: /usr/bin/python3 backup_db.py (can be scheduled via cron, once a day)
 """
 
+import os
 import sqlite3
+import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 
-DB = Path(__file__).parent / "cmdb.db"
-BACKUP_DIR = Path(__file__).parent / "backups"
+REPO_ROOT = Path(__file__).resolve().parents[2]
+DB = Path(os.environ.get("CMDB_DB_PATH", REPO_ROOT / "cmdb.db")).resolve()
+BACKUP_DIR = REPO_ROOT / "backups"
 KEEP = 14
 
 
 def main() -> None:
     if not DB.exists():
-        return
+        print(f"db not found: {DB}", file=sys.stderr)
+        sys.exit(1)
     BACKUP_DIR.mkdir(exist_ok=True)
     dest = BACKUP_DIR / f"cmdb-{datetime.now():%Y%m%d-%H%M}.db"
     src = sqlite3.connect(DB)
