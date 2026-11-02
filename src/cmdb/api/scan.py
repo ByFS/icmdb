@@ -23,6 +23,8 @@ SCAN_PORTS = [22, 80, 443, 445, 3389, 8080]
 PROBE_TIMEOUT = 0.5
 # Sanity cap: a /16 at most, anything larger is a mistake
 MAX_ADDRESSES = 65536
+# Keep only the newest jobs: finished scans retain full host lists, unbounded growth leaks memory
+MAX_JOBS = 50
 
 # In-process job registry (single worker uvicorn; a restart drops running jobs)
 _jobs: dict[str, dict] = {}
@@ -170,6 +172,9 @@ def start_scan(body: ScanIn) -> dict:
         network = ipaddress.ip_network(cidr, strict=False)
     except ValueError:
         raise HTTPException(status_code=422, detail="Invalid CIDR")
+    if network.version != 4:
+        # IPv6 would blow up in subnet_of() against the IPv4 connected list
+        raise HTTPException(status_code=422, detail="仅支持 IPv4 网段")
     if network.num_addresses > MAX_ADDRESSES:
         raise HTTPException(status_code=400, detail="网段过大, 最多扫描 65536 个地址")
     connected = _directly_connected()
@@ -181,6 +186,9 @@ def start_scan(body: ScanIn) -> dict:
         )
 
     job_id = secrets.token_hex(8)
+    while len(_jobs) >= MAX_JOBS:
+        # dict preserves insertion order; evict the oldest job first
+        _jobs.pop(next(iter(_jobs)))
     _jobs[job_id] = {
         "job_id": job_id,
         "cidr": cidr,
