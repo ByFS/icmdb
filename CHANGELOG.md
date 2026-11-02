@@ -1,7 +1,7 @@
 # Changelog
 
 > English version: [docs/en/CHANGELOG.md](docs/en/CHANGELOG.md)
-格式参考 [Keep a Changelog](https://keepachangelog.com/),版本号遵循语义化版本。
+格式参考 [Keep a Changelog](https://keepachangelog.com/),版本号遵循语义化版本
 
 ## Unreleased
 
@@ -56,7 +56,7 @@
 
 ## v2.0.0 - 2026-09-13
 
-CMDB v2 首个正式发布。从零实现:采集推送、字段级 diff 冲突裁决、存储与展示。
+CMDB v2 首个正式发布从零实现:采集推送、字段级 diff 冲突裁决、存储与展示
 
 ### 新增
 
