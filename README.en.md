@@ -44,11 +44,11 @@ cd src/iagent && CGO_ENABLED=0 go build -ldflags "-X main.version=0.1.0" -o dist
 Production deployment: after `npm run build`, the frontend output goes to `src/cmdb/static` and is served by FastAPI,
 so only the backend service needs to be started.
 
-Database backup: `src/scripts/backup_db.py` uses `VACUUM INTO` to produce a consistent snapshot into `src/scripts/backups/`,
+Database backup: `src/scripts/backup_db.py` uses `VACUUM INTO` to produce a consistent snapshot into the repo-root `backups/`,
 keeping the most recent 14 copies; it can be hooked into cron to run daily:
 
 ```cron
-40 2 * * * /usr/bin/python3 /home/fs/icmdb/src/scripts/backup_db.py >> /home/fs/icmdb/src/scripts/backups/backup.log 2>&1
+40 2 * * * mkdir -p /data/icmdb/backups && /usr/bin/python3 /data/icmdb/src/scripts/backup_db.py >> /data/icmdb/backups/backup.log 2>&1
 ```
 
 ## Testing

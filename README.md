@@ -44,11 +44,11 @@ cd src/iagent && CGO_ENABLED=0 go build -ldflags "-X main.version=0.1.0" -o dist
 生产部署: 前端 `npm run build` 后产物输出到 `src/cmdb/static`,由 FastAPI 托管,
 只需启动后端一个服务
 
-数据库备份:`src/scripts/backup_db.py` 用 `VACUUM INTO` 生成一致性快照到 `src/scripts/backups/`,
+数据库备份:`src/scripts/backup_db.py` 用 `VACUUM INTO` 生成一致性快照到仓库根 `backups/`,
 保留最近 14 份, 可挂 cron 每日执行:
 
 ```cron
-40 2 * * * /usr/bin/python3 /home/fs/icmdb/src/scripts/backup_db.py >> /home/fs/icmdb/src/scripts/backups/backup.log 2>&1
+40 2 * * * mkdir -p /data/icmdb/backups && /usr/bin/python3 /data/icmdb/src/scripts/backup_db.py >> /data/icmdb/backups/backup.log 2>&1
 ```
 
 ## 测试

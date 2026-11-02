@@ -122,5 +122,5 @@ cd src/iagent && go test ./...                      # 采集客户端测试(Go)
 
 - 真实隐私数据不入仓库: SN,MAC,主机名,IP,密码,token 一律不写入文档和 commit; 文档示例用模拟数据(如 `SN0000000001`, `AA:BB:CC:DD:EE:01`, `PASSWORD`)并标注"模拟数据"
 - 真实清单/配置排除: 含真实 IP/token 的 inventory,config 在 .gitignore 中排除(如 `inventory.yml`, `*.local.yml`, `remote_payload.json`)
-- 生产数据只读: 在生产机器上测试时, 推送目标一律用本地哑服务(如 `tests/local_server.py`), 不碰生产 CMDB 数据库
+- 生产数据只读: 在生产机器上测试时, 推送目标一律用本地哑服务(如 `tests/iagent/local_server.py`), 不碰生产 CMDB 数据库
 - 密码/凭证不硬编码: 测试脚本凭证用环境变量或占位符; 一次性密码用后即弃, 不作为长期凭证
