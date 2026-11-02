@@ -10,7 +10,7 @@ export default defineConfig({
     },
   },
   build: {
-    outDir: '../../src/cmdb/static',
+    outDir: '../cmdb/static',
     emptyOutDir: true,
     // Element Plus 等第三方库拆分为独立 vendor chunk,避免主包过大
     rollupOptions: {

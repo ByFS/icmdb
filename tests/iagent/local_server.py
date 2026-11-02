@@ -6,8 +6,8 @@
 import json
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
-BIN = "/data/icmdb/iagent/dist/iagent-0.1.0.gz"
-PAYLOAD = "/data/icmdb/iagent/tests/remote_payload.json"
+BIN = "/data/icmdb/src/iagent/dist/iagent-0.1.0.gz"
+PAYLOAD = "/data/icmdb/tests/iagent/remote_payload.json"
 
 
 class H(BaseHTTPRequestHandler):
