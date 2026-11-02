@@ -40,5 +40,5 @@ CGO_ENABLED=0 go build -ldflags "-X main.version=0.1.0" -o dist/iagent-0.1.0 ./c
 ## 数据库备份
 
 ```bash
-python3 src/scripts/backup_db.py     # VACUUM INTO 生成一致性快照到 src/scripts/backups/, 保留最近 14 份
+python3 src/scripts/backup_db.py     # VACUUM INTO 生成一致性快照到仓库根 backups/, 保留最近 14 份; DB 不存在时报错退出
 ```
