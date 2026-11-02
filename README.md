@@ -61,8 +61,8 @@ uv run pytest tests/ -v
 | `CMDB_OFFLINE_THRESHOLD_DAYS` | `1` | 疑似下线阈值(天),仅作系统设置的初始默认值 |
 | `CMDB_STATIC_DIR` | `src/cmdb/static` | 前端构建产物目录 |
 | `CMDB_ADMIN_USER` | `admin` | 登录用户名 |
-| `CMDB_ADMIN_PASSWORD` | `admin` | 登录密码 |
-| `CMDB_SECRET_KEY` | `cmdb-session-secret` | 会话 cookie 签名密钥 |
+| `CMDB_ADMIN_PASSWORD` | 无(自动生成) | 登录密码, 未设置时首次启动自动生成并打印到日志 |
+| `CMDB_SECRET_KEY` | 无(自动生成) | 会话 cookie 签名密钥, 未设置时随机生成并持久化到 secret.key |
 | `CMDB_SESSION_EXPIRE_DAYS` | `7` | 会话有效期(天) |
 
 ## 文档

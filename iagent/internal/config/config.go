@@ -15,7 +15,7 @@ var ErrNoServerURL = errors.New("server_url is required")
 
 type Config struct {
 	ServerURL string        `yaml:"server_url"`
-	Token     string        `yaml:"token"`    // reserved, wired in once icmdb auth is ready
+	Token     string        `yaml:"token"`    // CMDB API key, sent as X-API-Key; omitted when empty
 	Interval  time.Duration `yaml:"interval"` // push interval, used to generate the systemd timer
 	Timeout   time.Duration `yaml:"timeout"`  // HTTP timeout
 }

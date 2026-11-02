@@ -61,8 +61,8 @@ uv run pytest tests/ -v
 | `CMDB_OFFLINE_THRESHOLD_DAYS` | `1` | Suspected-offline threshold (days), only the initial default for system settings |
 | `CMDB_STATIC_DIR` | `src/cmdb/static` | Frontend build output directory |
 | `CMDB_ADMIN_USER` | `admin` | Login username |
-| `CMDB_ADMIN_PASSWORD` | `admin` | Login password |
-| `CMDB_SECRET_KEY` | `cmdb-session-secret` | Session cookie signing key |
+| `CMDB_ADMIN_PASSWORD` | none (auto-generated) | Login password; generated and printed to the log on first startup when unset |
+| `CMDB_SECRET_KEY` | none (auto-generated) | Session cookie signing key; a random key is generated and persisted to secret.key when unset |
 | `CMDB_SESSION_EXPIRE_DAYS` | `7` | Session lifetime (days) |
 
 ## Documentation

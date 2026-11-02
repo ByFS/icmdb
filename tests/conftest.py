@@ -1,5 +1,12 @@
 """Shared test fixtures: temporary SQLite database, isolated per test case"""
 
+import os
+
+# The dev defaults were removed (password now auto-generated when unset); tests pin
+# fixed credentials, set before importing cmdb modules so settings snapshot them
+os.environ.setdefault("CMDB_ADMIN_USER", "admin")
+os.environ.setdefault("CMDB_ADMIN_PASSWORD", "admin")
+
 import pytest
 from sqlmodel import Session
 

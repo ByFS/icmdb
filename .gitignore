@@ -21,6 +21,7 @@ src/cmdb/static/
 # ---- 环境与本地配置 ----
 .env
 .env.*
+secret.key
 
 # ---- IDE / 工具 ----
 .claude/
