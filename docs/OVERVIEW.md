@@ -367,6 +367,15 @@ id、`username`(索引)、`action`(索引,如"删除设备")、`detail`(详情,�
 | `PUT /settings/system` | admin | 修改阈值(1~8760 小时),设备状态按新阈值即时计算 |
 | `GET /audit-logs` | admin | 审计日志,`username` 过滤、`limit`(默认 100,最大 1000),新在前 |
 
+### 4.8 网段扫描
+
+| 接口 | 鉴权 | 说明 |
+|---|---|---|
+| `POST /scans` | admin | 发起后台扫描任务,`{"cidr": "192.168.1.0/24"}` → `{"job_id"}` |
+| `GET /scans/{job_id}` | admin | 轮询进度与结果,发现的主机按 IP 与 CMDB 对比(known/未知),结果不入库 |
+
+纯 Python 实现(TCP connect + ARP 缓存 + 反向 DNS,无需 root),仅支持本机直连网段,非直连诚实拒绝;详见 API.md §13。
+
 ---
 
 ## 5. 字段对应关系总表

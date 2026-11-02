@@ -10,6 +10,7 @@ const router = createRouter({
     { path: '/devices', component: () => import('../views/DeviceList.vue') },
     { path: '/devices/:id', component: () => import('../views/DeviceDetail.vue') },
     { path: '/conflicts', component: () => import('../views/ConflictResolve.vue') },
+    { path: '/scan', component: () => import('../views/Scan.vue') },
     { path: '/users', component: () => import('../views/Users.vue') },
     { path: '/settings', component: () => import('../views/SystemSettings.vue') },
     { path: '/audit-logs', component: () => import('../views/AuditLog.vue') },
@@ -28,7 +29,7 @@ router.beforeEach(async (to) => {
       return '/login'
     }
   }
-  if (to.path === '/users' || to.path === '/settings' || to.path === '/audit-logs') {
+  if (to.path === '/users' || to.path === '/settings' || to.path === '/audit-logs' || to.path === '/scan') {
     try {
       const me = await api.me()
       if (me.role !== 'admin') return '/dashboard'

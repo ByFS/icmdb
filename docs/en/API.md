@@ -25,6 +25,7 @@
 - [User management](#10-user-management)
 - [Operation audit](#11-operation-audit)
 - [API keys](#12-api-keys)
+- [Subnet scan](#13-subnet-scan)
 
 ---
 
@@ -626,6 +627,44 @@ Read-only GET works the same way:
 ```bash
 curl -H "X-API-Key: cmdb_<your-key>" http://<host>:8080/api/v1/devices
 ```
+
+## 13. Subnet Scan
+
+Scan a specified subnet for live hosts and compare them against existing CMDB devices (admin only):
+
+- Pure Python: TCP connect liveness probe + kernel ARP cache MAC + reverse DNS, no root needed
+- **Locally connected subnets only** (non-direct targets are refused honestly: gateways may answer any connect, and MAC addresses do not cross routers); the error message lists the scannable subnets
+- Scans run as a **background job**: the start call returns a job_id immediately, the frontend polls for progress; results are not stored and a restart drops them
+- Size cap: at most 65536 addresses per scan
+
+### `POST /api/v1/scans`
+
+```json
+{"cidr": "192.168.1.0/24"}
+```
+
+Returns `{"job_id": "..."}`; an invalid CIDR returns 422, a non-local subnet returns 400.
+
+### `GET /api/v1/scans/{job_id}`
+
+```json
+{
+  "job_id": "...", "cidr": "192.168.1.0/24",
+  "status": "running", "scanned": 128, "total": 254,
+  "hosts": [],
+  "error": null
+}
+```
+
+`status` is `running` / `done` / `error`; when done, `hosts` holds the discovered live hosts:
+
+```json
+{"ip": "192.168.1.10", "mac": "AA:BB:CC:DD:EE:01", "hostname": "demo-node-01",
+ "known": true, "device_id": 3, "device_hostname": "demo-node-01"}
+```
+
+- `known`: the IP is already in the CMDB (matched by mgmt IP or nic IP), carrying `device_id` / `device_hostname`; `false` means unknown
+- Simulated data
 
 ## Appendix: Configuration (environment variables)
 

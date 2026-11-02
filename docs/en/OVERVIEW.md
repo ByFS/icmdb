@@ -367,6 +367,15 @@ After a resolution takes effect it is written to change_history, and the pending
 | `PUT /settings/system` | admin | Changes the threshold (1~8760 hours); device status is computed immediately under the new threshold |
 | `GET /audit-logs` | admin | Audit log, `username` filter, `limit` (default 100, max 1000), newest first |
 
+### 4.8 Subnet scan
+
+| Endpoint | Auth | Description |
+|---|---|---|
+| `POST /scans` | admin | Starts a background scan job, `{"cidr": "192.168.1.0/24"}` → `{"job_id"}` |
+| `GET /scans/{job_id}` | admin | Polls progress and results; discovered hosts are compared against the CMDB by IP (known/unknown), results are not stored |
+
+Pure Python (TCP connect + ARP cache + reverse DNS, no root needed), locally connected subnets only, non-direct targets refused honestly; see API.md §13.
+
 ---
 
 ## 5. Field Mapping Reference
