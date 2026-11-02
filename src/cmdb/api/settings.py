@@ -107,6 +107,7 @@ def update_system_settings(
 
     # API key feature toggle (None = keep, stored as "1"/"0")
     old_enabled = get_api_key_enabled(session)
+    toggle_changed = False
     if body.api_key_enabled is not None and body.api_key_enabled != old_enabled:
         enabled_row = session.exec(
             select(SystemSetting).where(SystemSetting.key == API_KEY_ENABLED_KEY)
@@ -121,14 +122,18 @@ def update_system_settings(
             session, current_username(request), "修改系统设置",
             f"API 密钥 {'开启' if body.api_key_enabled else '关闭'}",
         )
-        # Drop the cached toggle so the middleware sees the new value immediately
-        invalidate_api_key_cache()
+        toggle_changed = True
 
     record_audit(
         session, current_username(request), "修改系统设置",
         f"疑似下线阈值 {old_value} -> {body.offline_threshold_hours} 小时",
     )
     session.commit()
+    # Drop the cached toggle only after the new value is visible; invalidating
+    # before the commit lets a concurrent request re-cache the stale value for
+    # the whole TTL window
+    if toggle_changed:
+        invalidate_api_key_cache()
     return SystemSettingsOut(
         offline_threshold_hours=body.offline_threshold_hours,
         api_key_enabled=get_api_key_enabled(session),
