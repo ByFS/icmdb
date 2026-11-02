@@ -44,7 +44,8 @@ func (c *Client) Push(p *payload.Payload) (Result, error) {
 	}
 	req.Header.Set("Content-Type", "application/json")
 	if c.token != "" {
-		req.Header.Set("Authorization", "Bearer "+c.token)
+		// The CMDB push endpoint checks the X-API-Key header (API key auth)
+		req.Header.Set("X-API-Key", c.token)
 	}
 	resp, err := c.http.Do(req)
 	if err != nil {

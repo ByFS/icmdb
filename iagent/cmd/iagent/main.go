@@ -29,9 +29,9 @@ const defaultConfigTemplate = `# iagent config file. Priority: CLI flags > this 
 # Empty or missing fails fast on startup (exit 1), nothing is pushed.
 server_url: ""
 
-# API token (optional, default "")
-# Reserved for auth: fill in once icmdb token auth is ready.
-# Sent as "Authorization: Bearer <token>"; omitted when empty, zero-change integration.
+# API key (optional, default "")
+# The CMDB API key; only effective when the server has API key auth enabled.
+# Sent as "X-API-Key: <token>"; omitted when empty, zero-change integration.
 token: ""
 
 # Push interval (optional, default 12h)
@@ -75,7 +75,7 @@ Examples:
 func run() int {
 	configPath := flag.String("config", "", "config file path (default /etc/iagent/config.yml)")
 	serverURL := flag.String("server", "", "CMDB API address, e.g. http://cmdb.example.com:8080")
-	token := flag.String("token", "", "API token (reserved)")
+	token := flag.String("token", "", "CMDB API key (X-API-Key header)")
 	initConfig := flag.Bool("init", false, "generate default config file (never overwrites)")
 	printOnly := flag.Bool("print", false, "collect and print JSON to stdout, no push, no config file needed (test mode)")
 	flag.Usage = usage
