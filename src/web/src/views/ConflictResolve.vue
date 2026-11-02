@@ -36,7 +36,7 @@
                 <el-tag type="danger" size="small">候删 {{ counts.removed }}</el-tag>
                 <el-tag type="warning" size="small">变化 {{ counts.changed }}</el-tag>
               </span>
-              <span class="hint">默认采用新值,可逐条改为保留旧值</span>
+              <span class="hint">默认采用新值, 可逐条改为保留旧值</span>
             </div>
             <div v-if="isAdmin" class="summary-actions">
               <el-button size="small" @click="keepAllOld">全部保留旧值</el-button>
@@ -164,7 +164,7 @@
 
         <p class="readonly-hint" v-if="isAdmin && !hasEntries">该记录无差异条目</p>
         <p class="readonly-hint" v-else-if="!isAdmin && hasEntries">
-          当前账号为只读权限,仅可查看差异;如需裁决请联系管理员。
+          当前账号为只读权限, 仅可查看差异;如需裁决请联系管理员
         </p>
       </template>
       <el-card v-else class="card">
@@ -322,7 +322,7 @@ function keepAllOld() {
     if (p.serial_number) psuChoices.value[p.serial_number] = 'old'
   for (const g of pending.value.diff.gpus ?? [])
     if (g.uuid) gpuChoices.value[g.uuid] = 'old'
-  ElMessage.info('已全部选择保留旧值,可直接提交')
+  ElMessage.info('已全部选择保留旧值, 可直接提交')
 }
 
 async function submit() {

@@ -31,7 +31,7 @@
       </el-upload>
       <el-popconfirm
         v-if="isAdmin"
-        title="确认批量删除选中的设备?(连带网卡数据,历史保留)"
+        title="确认批量删除选中的设备?(连带网卡数据, 历史保留)"
         @confirm="batchRemove"
       >
         <template #reference>
@@ -74,7 +74,7 @@
       <el-table-column v-if="isAdmin" label="操作" width="100" fixed="right">
         <template #default="{ row }">
           <el-popconfirm
-            title="确认删除该设备?(连带网卡数据,历史保留)"
+            title="确认删除该设备?(连带网卡数据, 历史保留)"
             @confirm="remove(row.id)"
           >
             <template #reference>
@@ -204,7 +204,7 @@ async function importCsv(upload: { raw: File }) {
     const body = await res.json()
     if (!res.ok) throw new Error(body.detail || res.statusText)
     ElMessage.success(
-      `导入完成:新增 ${body.created},未变化 ${body.unchanged},进待裁决 ${body.diff_created}`
+      `导入完成: 新增 ${body.created},未变化 ${body.unchanged},进待裁决 ${body.diff_created}`
     )
     await load()
   } catch (e) {

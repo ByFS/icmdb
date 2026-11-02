@@ -28,10 +28,10 @@
       </el-form>
       <div class="desc">
         超过该时长未推送数据的设备将被标记为<span class="value">疑似下线</span>,
-        数据不自动删除;重新推送即恢复活跃。
+        数据不自动删除;重新推送即恢复活跃
       </div>
       <div class="desc">
-        开启后采集器推送必须携带有效密钥(请求头 X-API-Key),否则返回 401。
+        开启后采集器推送必须携带有效密钥(请求头 X-API-Key),否则返回 401
       </div>
     </el-card>
 
@@ -70,7 +70,7 @@
     <el-dialog v-model="createVisible" title="新建密钥" width="400px">
       <el-input
         v-model="newName"
-        placeholder="密钥名称,如 iagent-prod"
+        placeholder="密钥名称, 如 iagent-prod"
         maxlength="64"
         @keyup.enter="create"
       />
@@ -132,7 +132,7 @@ async function save() {
     saved.value = s.offline_threshold_hours
     apiKeyEnabled.value = s.api_key_enabled
     savedKeyEnabled.value = s.api_key_enabled
-    ElMessage.success('已保存,设备状态按新阈值即时计算')
+    ElMessage.success('已保存, 设备状态按新阈值即时计算')
     await fetchKeys()
   } catch (e) {
     ElMessage.error((e as Error).message)

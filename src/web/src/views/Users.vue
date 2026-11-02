@@ -33,7 +33,7 @@
           </template>
         </el-table-column>
       </el-table>
-      <p class="hint">管理员可操作(裁决 / 删除 / 标签 / 用户管理);只读用户仅可查看。</p>
+      <p class="hint">管理员可操作(裁决 / 删除 / 标签 / 用户管理);只读用户仅可查看</p>
     </el-card>
 
     <el-dialog v-model="createVisible" title="新增用户" width="400px">

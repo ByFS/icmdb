@@ -114,7 +114,7 @@ Push → hostname matched against devices in the DB
 
 ### 2.2 Field-by-field description
 
-**agent — collector info**
+**agent - collector info**
 
 | Field | Type | Purpose | Stored in |
 |---|---|---|---|
@@ -123,7 +123,7 @@ Push → hostname matched against devices in the DB
 | `timestamp` | datetime, nullable | Collection time; **an empty string is treated as not collected**; falls back to the server receive time when absent | `device.last_pushed_at` |
 | `full_sync` | bool, default true | Full-sync flag: extra hardware entries in the DB go into the diff for deletion; false = incremental (only what is pushed is stored) | Not persisted, affects diff behavior |
 
-**os — operating system**
+**os - operating system**
 
 | Field | Type | Purpose | Stored in |
 |---|---|---|---|
@@ -133,7 +133,7 @@ Push → hostname matched against devices in the DB
 | `kernel` | string, nullable | Kernel version | `device.kernel` |
 | `virt` | string, nullable | Virtualization type (bare_metal / kvm / ...) | `device.os_virt` |
 
-**mgmt — management port** (the whole section may be null, treated as not collected)
+**mgmt - management port** (the whole section may be null, treated as not collected)
 
 | Field | Type | Purpose | Stored in |
 |---|---|---|---|
@@ -141,7 +141,7 @@ Push → hostname matched against devices in the DB
 | `ip` | string, nullable | Management-port IP | `device.mgmt_ip` |
 | `prefix_length` | int, nullable | Subnet prefix length | `device.mgmt_prefix_length` |
 
-**hardware — hardware** (the whole section may be null)
+**hardware - hardware** (the whole section may be null)
 
 | Field | Type | Purpose | Stored in |
 |---|---|---|---|
@@ -198,7 +198,7 @@ Legacy collector pushes with a flat structure containing only top-level `hostnam
 
 SQLite (WAL mode, foreign key constraints enabled), tables created with SQLModel, **14 tables** in total. All child tables reference `device` through a `device_id` foreign key and are indexed.
 
-### 3.1 `device` — host main table
+### 3.1 `device` - host main table
 
 | Field | Type | Description |
 |---|---|---|
@@ -212,38 +212,38 @@ SQLite (WAL mode, foreign key constraints enabled), tables created with SQLModel
 | `last_pushed_at` | datetime | Last push time (naive UTC), the basis for the suspected-offline determination |
 | `created_at` / `updated_at` | datetime | Creation / last update time |
 
-### 3.2 `nic` / `nic_ip` — NICs and IPs
+### 3.2 `nic` / `nic_ip` - NICs and IPs
 
 `nic`: id, `device_id` (FK+index), `name` (identity, unique constraint device_id+name), `mac`.
 `nic_ip`: id, `nic_id` (FK+index), `ip` (unique constraint nic_id+ip), `prefix_length`.
 
 IPs get their own table: one NIC can have multiple IPs (IPv4/IPv6, multiple addresses), and a one-to-many relationship must be split into a table.
 
-### 3.3 `memoryslot` — memory slots
+### 3.3 `memoryslot` - memory slots
 
 id, `device_id` (FK+index), `slot` (identity, unique constraint device_id+slot), `manufacturer`, `part_number`, `type` (memory type, DDR4/DDR5), `size` + `size_unit` (nominal raw value), `size_gb` (normalized column, TB×1024, for easy sorting and statistics), `speed_mts`, `serial_number`.
 
-### 3.4 `cpu` — CPU slots
+### 3.4 `cpu` - CPU slots
 
 id, `device_id` (FK+index), `slot` (identity, unique constraint device_id+slot), `model`. CPU collection only gathers the model, deliberately kept minimal.
 
-### 3.5 `disk` — disks
+### 3.5 `disk` - disks
 
 id, `device_id` (FK+index), `serial_number` (identity, unique constraint device_id+serial_number), `type` (SSD/HDD), `manufacturer`, `model`, `size` + `size_unit` + `size_gb` (normalized). The SN is the disk's natural identity: same-SN data changes = changed, a new SN = added, a disk swap = old disk deleted + new disk added.
 
-### 3.6 `psu` — PSU modules
+### 3.6 `psu` - PSU modules
 
 id, `device_id` (FK+index), `serial_number` (identity, unique constraint device_id+serial_number), `manufacturer`, `model`, `max_power_w`.
 
-### 3.7 `gpu` — GPU
+### 3.7 `gpu` - GPU
 
 id, `device_id` (FK+index), `uuid` (identity, unique constraint device_id+uuid), `name`, `serial_number`, `size` + `size_unit` + `size_gb`, `driver_version`, `pcie_id`.
 
-### 3.8 `device_tag` — device tags
+### 3.8 `device_tag` - device tags
 
-id, `device_id` (FK+index), `name` (indexed), unique constraint device_id+name. One row per device-tag pair. **CMDB metadata** (editable in the UI, not part of the collected data), replacing the legacy comma-separated TEXT column — once split into a table, exact-match filtering and a unique constraint become possible.
+id, `device_id` (FK+index), `name` (indexed), unique constraint device_id+name. One row per device-tag pair. **CMDB metadata** (editable in the UI, not part of the collected data), replacing the legacy comma-separated TEXT column - once split into a table, exact-match filtering and a unique constraint become possible.
 
-### 3.9 `pending_change` — pending conflict resolution
+### 3.9 `pending_change` - pending conflict resolution
 
 | Field | Type | Description |
 |---|---|---|
@@ -255,29 +255,29 @@ id, `device_id` (FK+index), `name` (indexed), unique constraint device_id+name. 
 | `status` | string, indexed | pending / applied / discarded |
 | `created_at` / `resolved_at` | datetime | Creation / resolution time |
 
-**Only one pending record per device**: a new push recomputes the diff and replaces it as a whole, never accumulating — the resolver always faces the latest view.
+**Only one pending record per device**: a new push recomputes the diff and replaces it as a whole, never accumulating - the resolver always faces the latest view.
 
-### 3.10 `changehistory` — change log
+### 3.10 `changehistory` - change log
 
 id, `device_id` (indexed, **no foreign key**), `summary` (e.g. "disk DISK-SN-001 added"), `source`, `diff` (JSON, the full diff at resolution time), `created_at` (indexed).
 
 The absence of a foreign key on `device_id` is deliberate: history records survive a device hard delete, and their traceability value is independent of the device's existence.
 
-### 3.11 `user` — users
+### 3.11 `user` - users
 
 id, `username` (unique+index), `password_hash` (PBKDF2-SHA256, stored as salt:digest), `role` (admin / viewer, indexed), `created_at`.
 
-### 3.12 `systemsetting` — system settings
+### 3.12 `systemsetting` - system settings
 
 id, `key` (unique+index), `value`, `updated_at`. Key-value storage; the only key currently in use is `offline_threshold_hours` (the suspected-offline threshold, in hours), where the `CMDB_OFFLINE_THRESHOLD_DAYS` environment variable is only the initial default.
 
-### 3.13 `auditlog` — operation audit
+### 3.13 `auditlog` - operation audit
 
 id, `username` (indexed), `action` (indexed, e.g. "delete device"), `detail` (e.g. the hostname), `created_at` (indexed). Management operations are written in the same transaction as the operation; admin only can view.
 
 ### 3.14 Lightweight migration mechanism
 
-`migrate()` in `database.py` performs idempotent column additions (SQLite ALTER TABLE) on existing tables + backfills legacy data (splitting the tags TEXT column, normalizing disk/memory capacity, adding indexes to existing tables); new databases are created directly by `create_all`. Alembic was not introduced — schema changes are infrequent and it is unnecessary in the single-file SQLite scenario.
+`migrate()` in `database.py` performs idempotent column additions (SQLite ALTER TABLE) on existing tables + backfills legacy data (splitting the tags TEXT column, normalizing disk/memory capacity, adding indexes to existing tables); new databases are created directly by `create_all`. Alembic was not introduced - schema changes are infrequent and it is unnecessary in the single-file SQLite scenario.
 
 ---
 
@@ -318,7 +318,7 @@ All endpoints are mounted under `/api/v1`. Authentication is handled uniformly b
 | `GET /pending-changes/{id}` | Login | Diff detail: payload + field-level diff list |
 | `POST /pending-changes/{id}/resolve` | admin | Resolve, request body below; repeated resolve 409 |
 
-Resolve request body — each diff entry chooses `new` (adopt the new data) / `old` (keep the current state); for a removed entry, choosing `new` means deletion:
+Resolve request body - each diff entry chooses `new` (adopt the new data) / `old` (keep the current state); for a removed entry, choosing `new` means deletion:
 
 ```json
 {
@@ -390,8 +390,8 @@ Pure Python (TCP connect + ARP cache + reverse DNS, no root needed), locally con
 | `mgmt.mac` / `mgmt.ip` / `mgmt.prefix_length` | `device.mgmt_mac` / `mgmt_ip` / `mgmt_prefix_length` | Same name |
 | `agent.version` | `device.agent_version` | `agent_version` |
 | `agent.timestamp` (or the receive time) | `device.last_pushed_at` | `last_pushed_at` + dynamic `status` |
-| — (non-collected data) | `device.location` / `owner` / `purpose` | Same name |
-| — (non-collected data) | `devicetag` table | `tags` |
+| - (non-collected data) | `device.location` / `owner` / `purpose` | Same name |
+| - (non-collected data) | `devicetag` table | `tags` |
 | `hardware.nics[].name` / `.mac` | `nic.name` / `nic.mac` | `nics[].name` / `.mac` |
 | `hardware.nics[].ips[]` | `nic_ip` table | `nics[].ips[]` |
 | `hardware.memory.slots[]` | `memoryslot` table | `memory[]` (the response field name has no slots) |
@@ -457,9 +457,9 @@ Note two naming differences: in the push body, memory is `memory.slots[]` and GP
 
 ### 7.1 What is sound
 
-1. **Push tolerance semantics aligned with the real collector**: null identity dropped, null scalars do not clear data, timestamp fallback — these were not decided arbitrarily; they were confirmed one by one against iagent's actual output, with zero surprises during integration.
+1. **Push tolerance semantics aligned with the real collector**: null identity dropped, null scalars do not clear data, timestamp fallback - these were not decided arbitrarily; they were confirmed one by one against iagent's actual output, with zero surprises during integration.
 2. **Three-branch push result (created/unchanged/diff_created)**: collectors can perceive the push outcome, with a clear boundary of responsibility.
-3. **Idempotent resolution + a full audit trail**: added/removed idempotent skips, the pending→applied/discarded state machine, the diff stored as a snapshot at resolution time — both replays and mis-operations are safe.
+3. **Idempotent resolution + a full audit trail**: added/removed idempotent skips, the pending→applied/discarded state machine, the diff stored as a snapshot at resolution time - both replays and mis-operations are safe.
 4. **Identity keys fit the physical reality of hardware**: slots for memory/CPU, SN for disks/PSUs, UUID for GPUs; each one's "same-identity change = changed" semantics holds up.
 5. **Performance awareness is in place**: one IN query per child-table type for the list (avoiding N+1), count via aggregation, status filtered at the SQL layer, a sort-field whitelist against injection, and a unique index on hostname.
 6. **The auth model is simple and sufficient**: two role levels + real-time DB queries, with the open push backed up by the human-gate-kept resolution.
@@ -476,4 +476,4 @@ Note two naming differences: in the push body, memory is `memory.slots[]` and GP
 
 ### 7.3 Conclusion
 
-The current design is **sound and self-consistent** for its target scenario of "on-prem ops, hundreds of devices, a single or a few admins": every trade-off (dynamic status, one pending record, lightweight migration, SQLite) matches the scenario, with no obvious over-engineering; the alignment of the tolerance semantics with the collector is the key to this system's smooth integration. The one improvement most worth investing in — the **collection token** — has landed in v2.3 as API keys (a low-cost way to block forged pushes); the remaining issues can wait until the volume grows.
+The current design is **sound and self-consistent** for its target scenario of "on-prem ops, hundreds of devices, a single or a few admins": every trade-off (dynamic status, one pending record, lightweight migration, SQLite) matches the scenario, with no obvious over-engineering; the alignment of the tolerance semantics with the collector is the key to this system's smooth integration. The one improvement most worth investing in - the **collection token** - has landed in v2.3 as API keys (a low-cost way to block forged pushes); the remaining issues can wait until the volume grows.

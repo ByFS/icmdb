@@ -238,8 +238,8 @@ const kindTag: Record<string, string> = {
   changed: 'warning',
 }
 const emptyHint: Record<string, string> = {
-  added: '新增,无字段变化',
-  removed: '库中多出,裁决 new 即删除',
+  added: '新增, 无字段变化',
+  removed: '库中多出, 裁决 new 即删除',
   changed: '-',
 }
 
