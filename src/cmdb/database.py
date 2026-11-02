@@ -7,16 +7,26 @@ from cmdb.config import settings
 
 
 def make_engine(db_path: str | None = None):
-    """Create a SQLite engine with WAL and foreign key constraints enabled"""
+    """Create a SQLite engine with WAL and foreign key constraints enabled
+
+    Pool sized to match the FastAPI threadpool (40): the SQLAlchemy default
+    (5 + overflow 10) exhausts under concurrent pushes and returns 500s
+    """
     path = db_path or settings.db_path
     engine = create_engine(
-        f"sqlite:///{path}", connect_args={"check_same_thread": False}
+        f"sqlite:///{path}",
+        connect_args={"check_same_thread": False},
+        pool_size=20,
+        max_overflow=20,
     )
 
     @event.listens_for(engine, "connect")
     def _set_sqlite_pragma(dbapi_connection, _connection_record):
         cursor = dbapi_connection.cursor()
         cursor.execute("PRAGMA journal_mode=WAL")
+        # WAL + NORMAL: no fsync per commit (checkpoint-time only), writers hold the
+        # write lock briefly; FULL collapses throughput under concurrent pushes
+        cursor.execute("PRAGMA synchronous=NORMAL")
         cursor.execute("PRAGMA foreign_keys=ON")
         cursor.close()
 
