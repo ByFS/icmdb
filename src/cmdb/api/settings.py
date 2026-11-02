@@ -1,5 +1,7 @@
 """System settings: DB key-value store, environment variables as defaults"""
 
+import time
+
 from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel, Field
 from sqlmodel import Session, select
@@ -24,6 +26,38 @@ def get_offline_threshold_hours(session: Session) -> int:
     if row and row.value and row.value.strip().isdigit():
         return int(row.value)
     return app_settings.offline_threshold_days * 24
+
+
+_API_KEY_CACHE_TTL = 5.0  # seconds; without invalidation a toggle takes effect within this window
+_api_key_cache: tuple[bool, float] | None = None
+
+
+def get_api_key_enabled_cached() -> bool:
+    """Cached toggle read for the middleware
+
+    The middleware runs per request, a DB round trip per request would hold
+    extra pool connections under concurrency
+    """
+    global _api_key_cache
+
+    # Lazy import: resolved at call time, picks up the test monkeypatch
+    from cmdb.database import get_engine_cached
+
+    now = time.monotonic()
+    if _api_key_cache is not None:
+        value, cached_at = _api_key_cache
+        if now - cached_at < _API_KEY_CACHE_TTL:
+            return value
+    with Session(get_engine_cached()) as session:
+        value = get_api_key_enabled(session)
+    _api_key_cache = (value, now)
+    return value
+
+
+def invalidate_api_key_cache() -> None:
+    """Drop the cached toggle so a settings change takes effect immediately"""
+    global _api_key_cache
+    _api_key_cache = None
 
 
 def get_api_key_enabled(session: Session) -> bool:
@@ -86,6 +120,8 @@ def update_system_settings(
             session, current_username(request), "修改系统设置",
             f"API 密钥 {'开启' if body.api_key_enabled else '关闭'}",
         )
+        # Drop the cached toggle so the middleware sees the new value immediately
+        invalidate_api_key_cache()
 
     record_audit(
         session, current_username(request), "修改系统设置",
