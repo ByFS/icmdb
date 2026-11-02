@@ -51,7 +51,7 @@ CMDB 侧只管存储和查询:推送是唯一数据写入入口,字段级 diff �
 ## 四,项目目录结构
 
 ```
-/data/iagent/
+iagent/                            # icmdb monorepo 内的采集客户端子目录
 ├── docs/                          # 文档
 │   ├── DEVELOPMENT_PLAN.md        # 开发计划(需求总结 + 分阶段)
 │   ├── PAYLOAD_EXAMPLE.md         # 推送体 JSON 基准
