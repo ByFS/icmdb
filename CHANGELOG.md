@@ -3,10 +3,13 @@
 > English version: [docs/en/CHANGELOG.md](docs/en/CHANGELOG.md)
 格式参考 [Keep a Changelog](https://keepachangelog.com/),版本号遵循语义化版本
 
-## Unreleased
+## v2.3.0 - 2026-11-03
 
 ### 新增
 
+- **网段扫描**:TCP 探活 + ARP MAC + 反查 DNS, 任意可达网段可扫, 结果只比对不入库
+- **扫描结果直接添加设备**:`POST /api/v1/scans/add`, hostname 缺省用反查名或 IP, 同名走 diff 裁决
+- **安全加固**:未配置时 admin 密码首次启动自动生成并打印, 会话签名密钥随机生成持久化到 secret.key, iagent 推送改发 `X-API-Key` 头
 - **用户管理**:admin / viewer 两级角色(viewer 只可查看, 写操作 403);
   admin 可创建 / 删除用户, 重置密码, 变更角色, 最后一个管理员保护
 - **修改自己密码**:`POST /api/v1/auth/change-password`,所有角色可用, 需验证原密码
