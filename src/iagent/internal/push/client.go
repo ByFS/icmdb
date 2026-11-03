@@ -5,9 +5,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"time"
 
+	"iagent/internal/logx"
 	"iagent/internal/payload"
 )
 
@@ -38,6 +40,7 @@ func (c *Client) Push(p *payload.Payload) (Result, error) {
 	if err != nil {
 		return Result{}, fmt.Errorf("marshal payload: %w", err)
 	}
+	logx.Debugf("push -> %s/api/v1/devices (%d bytes, key=%v)", c.serverURL, len(body), c.token != "")
 	req, err := http.NewRequest(http.MethodPost, c.serverURL+"/api/v1/devices", bytes.NewReader(body))
 	if err != nil {
 		return Result{}, fmt.Errorf("new request: %w", err)
@@ -47,17 +50,22 @@ func (c *Client) Push(p *payload.Payload) (Result, error) {
 		// The CMDB push endpoint checks the X-API-Key header (API key auth)
 		req.Header.Set("X-API-Key", c.token)
 	}
+	start := time.Now()
 	resp, err := c.http.Do(req)
 	if err != nil {
 		return Result{}, fmt.Errorf("push: %w", err)
 	}
 	defer resp.Body.Close()
+	logx.Debugf("push <- HTTP %d in %s", resp.StatusCode, time.Since(start).Round(time.Millisecond))
 	if resp.StatusCode != http.StatusOK {
+		b, _ := io.ReadAll(io.LimitReader(resp.Body, 512))
+		logx.Debugf("push error body: %s", string(b))
 		return Result{}, fmt.Errorf("push: HTTP %d", resp.StatusCode)
 	}
 	var result Result
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return Result{}, fmt.Errorf("decode result: %w", err)
 	}
+	logx.Debugf("push result: %s device_id=%d", result.Result, result.DeviceID)
 	return result, nil
 }

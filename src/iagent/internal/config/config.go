@@ -21,11 +21,13 @@ type Config struct {
 	Interval  time.Duration `yaml:"interval"`
 	// HTTP timeout
 	Timeout   time.Duration `yaml:"timeout"`
+	// verbose logging for troubleshooting
+	Debug     bool          `yaml:"debug"`
 }
 
 // Load loads configuration. Empty path skips the file; CLI flags override the
 // file; defaults as fallback
-func Load(path, serverURL, token string) (Config, error) {
+func Load(path, serverURL, token string, debug bool) (Config, error) {
 	cfg := Config{Interval: 12 * time.Hour, Timeout: 30 * time.Second}
 	if path != "" {
 		b, err := os.ReadFile(path)
@@ -41,6 +43,9 @@ func Load(path, serverURL, token string) (Config, error) {
 	}
 	if token != "" {
 		cfg.Token = token
+	}
+	if debug {
+		cfg.Debug = true
 	}
 	if cfg.ServerURL == "" {
 		return Config{}, ErrNoServerURL

@@ -65,6 +65,7 @@ timeout: 30s
 | `--config` | `/etc/iagent/config.yml` | 配置文件路径;传 `/dev/null` 可跳过文件(仅用参数 + 默认值) |
 | `--init` | - | **生成默认配置文件**到 `--config` 路径(带全部注释);已存在则不覆盖;生成后填好 `server_url` 再正式运行 |
 | `--print` | - | **测试模式**:采集 → 组装 → 打印 JSON 到 stdout,**不推送, 不读配置文件, 不需要 `server_url`**;用于不等 12h 直接看采集结果 |
+| `--debug` | - | **排查模式**:打印 `[DEBUG]` 行——每个字段为何为 null(哪条命令失败、什么原因)、采集到的各类别计数、推送请求/响应/耗时;可与 `--print` 或 `--config` 组合;配置文件 `debug: true` 等效 |
 | `--server` | - | CMDB API 地址,**覆盖**配置文件的 `server_url` |
 | `--token` | - | API token,**覆盖**配置文件的 `token` |
 

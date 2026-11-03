@@ -7,6 +7,8 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
+
+	"iagent/internal/logx"
 )
 
 // strPtr returns a pointer for non-empty strings, nil for empty
@@ -35,6 +37,7 @@ func int64Ptr(n int64) *int64 { return &n }
 func cmdOutput(name string, args ...string) (string, error) {
 	out, err := exec.Command(name, args...).Output()
 	if err != nil {
+		logx.Debugf("cmd %s %v failed: %v", name, args, err)
 		return "", err
 	}
 	return strings.TrimSpace(string(out)), nil

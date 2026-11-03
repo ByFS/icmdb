@@ -30,6 +30,7 @@ CGO_ENABLED=0 go build -ldflags "-X main.version=0.1.0" -o dist/iagent-0.1.0 ./c
 ```bash
 ./dist/iagent-0.1.0                # 显示帮助
 ./dist/iagent-0.1.0 --print        # 测试模式: 采集并打印 JSON, 不推送, 不读配置
+./dist/iagent-0.1.0 --debug        # 排查模式: 打印 [DEBUG] 行(字段为何为 null, 推送请求/响应/耗时), 可组合 --print/--config
 ./dist/iagent-0.1.0 --init         # 生成默认配置(默认 /etc/iagent/config.yml, 已存在不覆盖)
 ./dist/iagent-0.1.0 --config <path>   # 采集并推送(配置必须含 server_url)
 ```
