@@ -374,7 +374,7 @@ id,`username`(索引),`action`(索引, 如"删除设备"),`detail`(详情, 如 h
 | `POST /scans` | admin | 发起后台扫描任务,`{"cidr": "192.168.1.0/24"}` → `{"job_id"}` |
 | `GET /scans/{job_id}` | admin | 轮询进度与结果, 发现的主机按 IP 与 CMDB 对比(known/未知),结果不入库 |
 
-纯 Python 实现(TCP connect + ARP 缓存 + 反向 DNS,无需 root),仅支持本机直连网段, 非直连诚实拒绝;详见 API.md §13
+纯 Python 实现(TCP connect + ARP 缓存 + 反向 DNS,无需 root),任意可达网段均可扫描, 跨网段主机 MAC 为空(ARP 仅本网段有效);结果可直接添加为设备(`POST /scans/add`, 走推送 ingest 路径, 同名走 diff 裁决);详见 API.md §13
 
 ---
 

@@ -5,7 +5,6 @@ import time
 
 import pytest
 
-from cmdb.api.scan import _directly_connected
 from test_api import make_push
 
 
@@ -26,24 +25,28 @@ def test_scan_invalid_cidr(client):
     assert res.status_code == 422
 
 
-def test_scan_non_local_subnet_refused(client):
-    # 8.8.8.0/24 is routed, not locally connected: refused honestly with the scannable list
+def test_scan_non_local_subnet_accepted(client, monkeypatch):
+    # Routed subnets are allowed: this host can reach upper-layer networks
+    from cmdb.api import scan
+
+    monkeypatch.setattr(scan, "_probe_host", lambda ip, ports: False)
     res = client.post("/api/v1/scans", json={"cidr": "8.8.8.0/24"})
-    assert res.status_code == 400
-    assert "直连网段" in res.json()["detail"]
+    assert res.status_code == 200
+    job = _wait_job(client, res.json()["job_id"])
+    assert job["status"] == "done"
+    assert job["total"] == 254
 
 
 def test_scan_job_flow_and_comparison(client, monkeypatch):
     from cmdb.api import scan
 
-    # Two devices in CMDB: 192.0.2.11 is known by mgmt_ip, 192.0.2.99 is unknown
+    # Two devices in CMDB: 192.0.2.11 is known by mgmt_ip, 192.0.2.98/99 are unknown
     client.post("/api/v1/devices", json=make_push())
-    monkeypatch.setattr(
-        scan, "_directly_connected", lambda: [__import__("ipaddress").ip_network("192.0.2.0/24")]
-    )
+    # deterministic: no reverse-DNS names, the add flow falls back to the IP
+    monkeypatch.setattr(scan, "_reverse_dns", lambda ip: "")
 
     def fake_probe(ip, ports):
-        return ip in ("192.0.2.11", "192.0.2.99")
+        return ip in ("192.0.2.11", "192.0.2.98", "192.0.2.99")
 
     monkeypatch.setattr(scan, "_probe_host", fake_probe)
 
@@ -63,11 +66,41 @@ def test_scan_job_flow_and_comparison(client, monkeypatch):
     # Unprobed hosts are not in the results
     assert "192.0.2.12" not in hosts
 
+    # Direct add with an explicit hostname
+    res = client.post(
+        "/api/v1/scans/add",
+        json={"job_id": job_id, "ip": "192.0.2.99", "hostname": "scan-added-node"},
+    )
+    assert res.status_code == 200
+    assert res.json()["result"] == "created"
+    added_id = res.json()["device_id"]
+    dev = client.get(f"/api/v1/devices/{added_id}")
+    assert dev.status_code == 200
+    assert dev.json()["hostname"] == "scan-added-node"
+    assert dev.json()["mgmt_ip"] == "192.0.2.99"
+    # the repolled job marks the host known
+    job = _wait_job(client, job_id)
+    host99 = next(h for h in job["hosts"] if h["ip"] == "192.0.2.99")
+    assert host99["known"] is True
+    assert host99["device_id"] == added_id
+    # re-adding a known host conflicts
+    res = client.post("/api/v1/scans/add", json={"job_id": job_id, "ip": "192.0.2.99"})
+    assert res.status_code == 409
+    # hostname falls back to the IP when nothing is given
+    res = client.post("/api/v1/scans/add", json={"job_id": job_id, "ip": "192.0.2.98"})
+    assert res.status_code == 200
+    dev = client.get(f"/api/v1/devices/{res.json()['device_id']}")
+    assert dev.json()["hostname"] == "192.0.2.98"
+    # unknown job and unknown ip are 404
+    assert client.post("/api/v1/scans/add", json={"job_id": "nope", "ip": "192.0.2.98"}).status_code == 404
+    assert client.post("/api/v1/scans/add", json={"job_id": job_id, "ip": "192.0.2.12"}).status_code == 404
+    # the add is audited
+    audit = client.get("/api/v1/audit-logs?page=1&page_size=10")
+    assert any(a["action"] == "扫描添加设备" for a in audit.json()["items"])
+
 
 def test_scan_loopback_real(client, monkeypatch):
     """Real TCP scan on loopback: the listening port makes 127.0.0.1 alive"""
-    import ipaddress
-
     from cmdb.api import scan
 
     server = socket.socket()
@@ -76,10 +109,6 @@ def test_scan_loopback_real(client, monkeypatch):
     port = server.getsockname()[1]
     try:
         monkeypatch.setattr(scan, "SCAN_PORTS", [port])
-        # The host may not expose a loopback route in /proc/net/route: stub the check
-        monkeypatch.setattr(
-            scan, "_directly_connected", lambda: [ipaddress.ip_network("127.0.0.0/8")]
-        )
         res = client.post("/api/v1/scans", json={"cidr": "127.0.0.1/32"})
         assert res.status_code == 200
         job = _wait_job(client, res.json()["job_id"])
@@ -92,10 +121,3 @@ def test_scan_loopback_real(client, monkeypatch):
         assert host["mac"] is None
     finally:
         server.close()
-
-
-def test_directly_connected_parses_routes():
-    networks = _directly_connected()
-    assert networks, "no directly connected routes parsed"
-    for n in networks:
-        assert str(n).count("/") == 1

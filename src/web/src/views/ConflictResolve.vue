@@ -54,9 +54,13 @@
             </template>
             <div v-for="f in pending.diff.fields" :key="f.field" class="field-row">
               <span class="fname">{{ fieldLabel(f.field) }}</span>
-              <span class="old-val mono">{{ fmtValue(f.field, f.old) }}</span>
+              <span class="old-val mono" :class="{ 'is-rejected': fieldChoices[f.field] === 'new' }">
+                <span class="side-tag">旧</span>{{ fmtValue(f.field, f.old) }}
+              </span>
               <span class="arrow">→</span>
-              <span class="new-val mono">{{ fmtValue(f.field, f.new) }}</span>
+              <span class="new-val mono" :class="{ 'is-rejected': fieldChoices[f.field] === 'old' }">
+                <span class="side-tag">新</span>{{ fmtValue(f.field, f.new) }}
+              </span>
               <span v-if="isAdmin" class="choice">
                 <el-radio-group v-model="fieldChoices[f.field]" size="small">
                   <el-radio-button value="old">保留旧值</el-radio-button>
@@ -422,22 +426,33 @@ async function submit() {
   display: flex;
   align-items: baseline;
   gap: 8px;
-  padding: 6px 8px;
+  padding: 6px 0;
   font-size: 13px;
 }
 .fname {
   flex-shrink: 0;
-  width: 96px;
+  width: 72px;
   color: var(--el-text-color-secondary);
   text-align: right;
+}
+/* old/new mini labels inside the value chips */
+.side-tag {
+  display: inline-block;
+  font-size: 10px;
+  line-height: 14px;
+  padding: 0 4px;
+  margin-right: 4px;
+  border-radius: 3px;
+  border: 1px solid currentColor;
+  opacity: 0.75;
+  vertical-align: 1px;
 }
 .mono {
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
 }
 .old-val {
-  color: var(--el-color-danger);
-  background: #fef0f0;
-  text-decoration: line-through;
+  color: var(--el-text-color-regular);
+  background: #f2f2f2;
   padding: 1px 6px;
   border-radius: 3px;
 }
@@ -446,6 +461,12 @@ async function submit() {
   background: #f0f9eb;
   padding: 1px 6px;
   border-radius: 3px;
+}
+/* the side the admin rejected reads as a red strikethrough */
+.is-rejected {
+  color: var(--el-color-danger);
+  background: #fef0f0;
+  text-decoration: line-through;
 }
 .arrow {
   color: var(--el-text-color-secondary);

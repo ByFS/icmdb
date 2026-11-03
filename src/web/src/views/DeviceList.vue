@@ -51,6 +51,7 @@
       v-loading="loading"
       @sort-change="onSortChange"
       @selection-change="onSelectionChange"
+      @row-click="onRowClick"
     >
       <el-table-column v-if="isAdmin" type="selection" width="45" />
       <el-table-column prop="id" label="ID" width="60" align="right">
@@ -111,10 +112,20 @@
 <script setup lang="ts">
 import { computed, inject, onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
+import { useRouter } from 'vue-router'
 import { api, DeviceOut } from '../api'
 
+const router = useRouter()
 const userRole = inject('userRole', ref('viewer'))
 const isAdmin = computed(() => userRole.value === 'admin')
+
+// Clicking anywhere on a row opens the detail page; controls (links, buttons,
+// the selection checkbox) keep their own behaviour
+function onRowClick(row: DeviceOut, _column: unknown, event: Event) {
+  const t = event.target as HTMLElement
+  if (t.closest('a, button, input, .el-checkbox, .el-checkbox__inner, label')) return
+  router.push(`/devices/${row.id}`)
+}
 
 const items = ref<DeviceOut[]>([])
 const total = ref(0)
@@ -252,6 +263,11 @@ onMounted(load)
 }
 .search {
   width: 300px;
+}
+
+/* the whole row is a link to the detail page */
+:deep(.el-table__row) {
+  cursor: pointer;
 }
 .filter {
   width: 170px;
