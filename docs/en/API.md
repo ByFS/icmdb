@@ -489,7 +489,7 @@ When enabled, collector pushes must carry a valid key (see [API keys](#12-api-ke
 ## 9. User Login
 
 User accounts are stored in the users table (PBKDF2 hash); the first admin account is seeded at first startup via `CMDB_ADMIN_USER` /
-`CMDB_ADMIN_PASSWORD` (default `admin` / `admin`).
+`CMDB_ADMIN_PASSWORD`; when no password is set, one is generated randomly and printed to the startup log once.
 After login an HttpOnly session cookie is issued (HMAC signed, default 7 days,
 configurable via `CMDB_SESSION_EXPIRE_DAYS`), carried automatically by subsequent requests.
 
@@ -525,7 +525,7 @@ Returns the current logged-in user and role `{"username": "admin", "role": "admi
 ## 10. User Management
 
 Admin only (others get 403). There are two roles: `admin` (can operate) and `viewer` (read-only).
-The first admin account is seeded at first startup via `CMDB_ADMIN_USER` / `CMDB_ADMIN_PASSWORD`;
+The first admin account is seeded at first startup via `CMDB_ADMIN_USER` / `CMDB_ADMIN_PASSWORD` (random when unset);
 role changes take effect immediately (no re-login needed).
 
 ### `GET /api/v1/users`
@@ -675,6 +675,6 @@ Returns `{"job_id": "..."}`; an invalid CIDR returns 422, a non-local subnet ret
 | `CMDB_OFFLINE_THRESHOLD_DAYS` | `1` | Suspected-offline threshold (days), only the initial default for the system setting |
 | `CMDB_STATIC_DIR` | `src/cmdb/static` | Frontend build output directory |
 | `CMDB_ADMIN_USER` | `admin` | Login username |
-| `CMDB_ADMIN_PASSWORD` | `admin` | Login password |
-| `CMDB_SECRET_KEY` | `cmdb-session-secret` | Session cookie signing key |
+| `CMDB_ADMIN_PASSWORD` | unset | Login password; generated randomly and printed once at first startup when unset |
+| `CMDB_SECRET_KEY` | unset | Session cookie signing key; generated and stored in `secret.key` next to the database when unset |
 | `CMDB_SESSION_EXPIRE_DAYS` | `7` | Session validity (days) |

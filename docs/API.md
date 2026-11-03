@@ -491,7 +491,7 @@ location 与 owner 接口保留但已从界面移除, 界面只编辑 purpose:
 ## 9. 用户登录
 
 用户账号存 users 表(PBKDF2 哈希),首个 admin 账号由 `CMDB_ADMIN_USER` /
-`CMDB_ADMIN_PASSWORD`(默认 `admin` / `admin`)在首次启动时种子创建
+`CMDB_ADMIN_PASSWORD` 在首次启动时种子创建;未设置密码时随机生成, 仅启动日志打印一次
 登录后签发 HttpOnly 会话 cookie(HMAC 签名, 默认 7 天,
 `CMDB_SESSION_EXPIRE_DAYS` 可配),后续请求自动携带
 
@@ -527,7 +527,7 @@ location 与 owner 接口保留但已从界面移除, 界面只编辑 purpose:
 ## 10. 用户管理
 
 仅 admin 可访问(其他用户返回 403)角色两级:`admin`(可操作)与 `viewer`(只可查看)
-首个 admin 账号由 `CMDB_ADMIN_USER` / `CMDB_ADMIN_PASSWORD` 在首次启动时种子创建;
+首个 admin 账号由 `CMDB_ADMIN_USER` / `CMDB_ADMIN_PASSWORD` 在首次启动时种子创建(未设置密码时随机生成);
 角色变更即时生效(无需重新登录)
 
 ### `GET /api/v1/users`
@@ -689,6 +689,6 @@ curl -H "X-API-Key: cmdb_你的密钥" http://<host>:8080/api/v1/devices
 | `CMDB_OFFLINE_THRESHOLD_DAYS` | `1` | 疑似下线阈值(天),仅作系统设置的初始默认值 |
 | `CMDB_STATIC_DIR` | `src/cmdb/static` | 前端构建产物目录 |
 | `CMDB_ADMIN_USER` | `admin` | 登录用户名 |
-| `CMDB_ADMIN_PASSWORD` | `admin` | 登录密码 |
-| `CMDB_SECRET_KEY` | `cmdb-session-secret` | 会话 cookie 签名密钥 |
+| `CMDB_ADMIN_PASSWORD` | 未设置 | 登录密码;未设置时首次启动随机生成, 仅日志打印一次 |
+| `CMDB_SECRET_KEY` | 未设置 | 会话 cookie 签名密钥;未设置时自动生成并写入数据库同目录 `secret.key` |
 | `CMDB_SESSION_EXPIRE_DAYS` | `7` | 会话有效期(天) |

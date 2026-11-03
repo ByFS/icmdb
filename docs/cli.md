@@ -6,7 +6,7 @@
 
 ```bash
 uv sync                                          # 首次/依赖变更后
-uv run uvicorn cmdb.main:app --port 8080         # 启动服务, 默认 admin/admin 登录
+uv run uvicorn cmdb.main:app --port 8080         # 启动服务(首次启动打印随机 admin 密码, 除非设了 CMDB_ADMIN_PASSWORD)
 uv run pytest tests/ -v                          # 全部测试
 uv run pytest tests/test_ingest.py::test_created_branch   # 单测
 ```

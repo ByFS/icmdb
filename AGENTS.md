@@ -6,7 +6,7 @@ CMDB v2 -- 采集推送, 字段级 diff 冲突裁决, 存储与展示后端 Pyth
 
 ```bash
 uv sync                          # 首次/依赖变更后
-uv run uvicorn cmdb.main:app --port 8080   # 后端(默认 admin/admin 登录)
+uv run uvicorn cmdb.main:app --port 8080   # 后端(未设 CMDB_ADMIN_PASSWORD 时首次启动打印随机 admin 密码)
 uv run pytest tests/ -v          # 全部测试
 uv run pytest tests/test_ingest.py::test_created_branch   # 单测
 
@@ -45,7 +45,7 @@ cd src/iagent && go test ./...                      # 采集客户端测试(Go)
 - **`agent.full_sync`**:true = 库中多出的硬件条目进 diff 候删(removed);false = 增量(只存推送的)
 - **同设备只一条 pending**:未裁决时新推送整体替换 diff,不累计
 - **`status`(active/suspected_offline)动态计算不入库**:阈值存 `systemsetting` 表(`offline_threshold_hours`,在线可改),env `CMDB_OFFLINE_THRESHOLD_DAYS` 只作初始默认值
-- **配置**见 `src/cmdb/config.py`(env 全有默认):`CMDB_DB_PATH` 默认是相对路径 `cmdb.db`,依赖启动时的 CWD;`CMDB_ADMIN_USER/PASSWORD`,`CMDB_SECRET_KEY`,`CMDB_STATIC_DIR`,`CMDB_SESSION_EXPIRE_DAYS`
+- **配置**见 `src/cmdb/config.py`(env 均有默认值):`CMDB_DB_PATH` 默认是相对路径 `cmdb.db`,依赖启动时的 CWD;未设 `CMDB_ADMIN_PASSWORD` 时首次启动随机生成并打印一次,未设 `CMDB_SECRET_KEY` 时自动生成并持久化到数据库同目录 `secret.key`;`CMDB_ADMIN_USER`, `CMDB_STATIC_DIR`,`CMDB_SESSION_EXPIRE_DAYS`
 
 ## 测试
 
