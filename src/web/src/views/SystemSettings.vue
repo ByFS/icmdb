@@ -1,8 +1,16 @@
 <template>
   <div>
     <el-card class="card" v-loading="loading">
-      <template #header>系统设置</template>
+      <template #header>
+        <div class="header">
+          <span>系统设置</span>
+          <span v-if="isAdmin" class="hint" :class="{ failed: saveState === 'failed' }">
+            {{ saveHint }}
+          </span>
+        </div>
+      </template>
       <el-form label-width="160px" style="max-width: 520px" @submit.prevent>
+        <!-- 无保存按钮: 数字输入防抖自动保存, 开关改完立即保存 -->
         <el-form-item label="疑似下线阈值">
           <el-input-number
             v-if="isAdmin"
@@ -11,16 +19,14 @@
             :max="8760"
             :step="1"
             controls-position="right"
+            @change="scheduleSave()"
           />
           <span v-else class="value">{{ hours }}</span>
           <span class="unit">小时</span>
         </el-form-item>
         <el-form-item label="API 密钥">
-          <el-switch v-if="isAdmin" v-model="apiKeyEnabled" />
+          <el-switch v-if="isAdmin" v-model="apiKeyEnabled" @change="scheduleSave(0)" />
           <span v-else class="value">{{ apiKeyEnabled ? '已开启' : '已关闭' }}</span>
-        </el-form-item>
-        <el-form-item v-if="isAdmin">
-          <el-button type="primary" :disabled="!dirty" @click="save">保存</el-button>
         </el-form-item>
         <el-form-item v-if="!isAdmin">
           <span class="hint">仅管理员可修改</span>
@@ -83,7 +89,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, onMounted, ref } from 'vue'
+import { computed, inject, onMounted, ref, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { api, ApiKey } from '../api'
 
@@ -91,13 +97,30 @@ const userRole = inject('userRole', ref('viewer'))
 const isAdmin = computed(() => userRole.value === 'admin')
 
 const hours = ref(24)
-const saved = ref(24)
 const apiKeyEnabled = ref(false)
-const savedKeyEnabled = ref(false)
 const loading = ref(false)
-const dirty = computed(
-  () => hours.value !== saved.value || apiKeyEnabled.value !== savedKeyEnabled.value,
-)
+
+// Last values confirmed by the server: reverted edits are skipped, no redundant writes
+const savedHours = ref(24)
+const savedKeyEnabled = ref(false)
+const saveState = ref<'idle' | 'saving' | 'saved' | 'failed'>('idle')
+const saveHint = computed(() => {
+  switch (saveState.value) {
+    case 'saving':
+      return '保存中…'
+    case 'saved':
+      return '已保存'
+    case 'failed':
+      return '保存失败'
+    default:
+      return '修改后自动保存'
+  }
+})
+
+// Auto-save: number edits are debounced, switch flips save right away; requests are serialized so the latest values always win
+let saveTimer: ReturnType<typeof setTimeout> | undefined
+let saving = false
+let queued = false
 
 // API key management (shown in this page while the feature is on)
 const keys = ref<ApiKey[]>([])
@@ -108,34 +131,65 @@ const newName = ref('')
 onMounted(async () => {
   loading.value = true
   try {
-    const s = await api.getSystemSettings()
-    hours.value = s.offline_threshold_hours
-    saved.value = s.offline_threshold_hours
-    apiKeyEnabled.value = s.api_key_enabled
-    savedKeyEnabled.value = s.api_key_enabled
+    await loadSettings()
   } catch (e) {
     ElMessage.error((e as Error).message)
   } finally {
     loading.value = false
   }
-  await fetchKeys()
 })
 
+// Show the key list as soon as the feature is switched on
+watch(apiKeyEnabled, (on) => {
+  if (on) {
+    void fetchKeys()
+  } else {
+    keys.value = []
+  }
+})
+
+async function loadSettings() {
+  const s = await api.getSystemSettings()
+  hours.value = s.offline_threshold_hours
+  savedHours.value = s.offline_threshold_hours
+  apiKeyEnabled.value = s.api_key_enabled
+  savedKeyEnabled.value = s.api_key_enabled
+}
+
+function scheduleSave(delay = 500) {
+  clearTimeout(saveTimer)
+  saveTimer = setTimeout(() => void save(), delay)
+}
+
+// The API requires offline_threshold_hours, both fields ride along on every save; the backend keeps whichever one did not change
 async function save() {
+  // An emptied input yields NaN, wait for a committable value
+  if (!Number.isFinite(hours.value)) return
+  if (hours.value === savedHours.value && apiKeyEnabled.value === savedKeyEnabled.value) return
+  if (saving) {
+    queued = true
+    return
+  }
+  saving = true
+  saveState.value = 'saving'
   try {
-    const body = {
+    const s = await api.updateSystemSettings({
       offline_threshold_hours: hours.value,
       api_key_enabled: apiKeyEnabled.value,
-    }
-    const s = await api.updateSystemSettings(body)
-    hours.value = s.offline_threshold_hours
-    saved.value = s.offline_threshold_hours
-    apiKeyEnabled.value = s.api_key_enabled
+    })
+    savedHours.value = s.offline_threshold_hours
     savedKeyEnabled.value = s.api_key_enabled
-    ElMessage.success('已保存, 设备状态按新阈值即时计算')
-    await fetchKeys()
+    saveState.value = 'saved'
   } catch (e) {
+    saveState.value = 'failed'
     ElMessage.error((e as Error).message)
+  } finally {
+    saving = false
+    // A newer change landed while the request was in flight: persist it now
+    if (queued) {
+      queued = false
+      void save()
+    }
   }
 }
 
@@ -240,6 +294,9 @@ async function revoke(row: ApiKey) {
 .hint {
   color: var(--el-text-color-secondary);
   font-size: 13px;
+}
+.failed {
+  color: var(--el-color-danger);
 }
 .desc {
   margin-top: 8px;
