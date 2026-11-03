@@ -1,5 +1,9 @@
 <template>
   <div>
+    <div class="title-row">
+      <h1 class="page-title">资产列表</h1>
+      <span class="count">共 {{ total }} 台</span>
+    </div>
     <div class="toolbar">
       <el-input
         v-model="search"
@@ -45,13 +49,15 @@
     <el-table
       :data="items"
       v-loading="loading"
-      border
-      stripe
       @sort-change="onSortChange"
       @selection-change="onSelectionChange"
     >
       <el-table-column v-if="isAdmin" type="selection" width="45" />
-      <el-table-column prop="id" label="ID" width="60" />
+      <el-table-column prop="id" label="ID" width="60" align="right">
+        <template #default="{ row }">
+          <span class="mono">{{ row.id }}</span>
+        </template>
+      </el-table-column>
       <el-table-column prop="hostname" label="Hostname" min-width="180" sortable="custom">
         <template #default="{ row }">
           <router-link :to="`/devices/${row.id}`" class="link">
@@ -59,7 +65,11 @@
           </router-link>
         </template>
       </el-table-column>
-      <el-table-column prop="serial_number" label="序列号" min-width="140" sortable="custom" />
+      <el-table-column label="序列号" min-width="140" sortable="custom">
+        <template #default="{ row }">
+          <span class="mono">{{ row.serial_number }}</span>
+        </template>
+      </el-table-column>
       <el-table-column prop="mgmt_ip" label="管理 IP" min-width="130" sortable="custom" />
       <el-table-column label="状态" width="110">
         <template #default="{ row }">
@@ -216,6 +226,24 @@ onMounted(load)
 </script>
 
 <style scoped>
+.title-row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: 500;
+  margin: 0;
+}
+
+.count {
+  font-size: 14px;
+  color: var(--muted);
+}
+
 .toolbar {
   display: flex;
   gap: 12px;
@@ -223,7 +251,7 @@ onMounted(load)
   flex-wrap: wrap;
 }
 .search {
-  width: 260px;
+  width: 300px;
 }
 .filter {
   width: 170px;

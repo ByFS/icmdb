@@ -1,52 +1,79 @@
 <template>
-  <div v-loading="loading">
-    <el-row :gutter="16">
-      <el-col :span="6" v-for="card in statCards" :key="card.label">
-        <el-card class="stat">
-          <div class="stat-value" :style="{ color: card.color }">{{ card.value }}</div>
-          <div class="stat-label">{{ card.label }}</div>
-        </el-card>
-      </el-col>
-    </el-row>
+  <div v-loading="loading" class="page">
+    <div class="title-row">
+      <h1 class="page-title">资产概览</h1>
+      <p class="finding">{{ finding }}</p>
+    </div>
 
-    <el-card class="card">
-      <template #header>
-        <div class="card-header">
-          <span>最近变更(裁决生效)</span>
-          <el-button type="primary" link @click="$router.push('/devices')">
-            查看全部资产
-          </el-button>
+    <div class="kpi-tray">
+      <div class="kpi">
+        <div class="kpi-label">资产总数</div>
+        <div class="kpi-value" :class="{ zero: !totalCount }">
+          {{ totalCount === null ? '-' : totalCount }}
         </div>
-      </template>
-      <el-table
-        ref="tableRef"
-        :data="stats?.recent_changes || []"
-        border
-        @row-click="toggleExpand"
-      >
-        <el-table-column type="expand" width="40">
-          <template #default="{ row }">
-            <DiffDetail :diff="row.diff" />
-          </template>
-        </el-table-column>
-        <el-table-column prop="created_at" label="时间" min-width="170">
-          <template #default="{ row }">{{ fmt(row.created_at) }}</template>
-        </el-table-column>
-        <el-table-column label="设备" width="100">
-          <template #default="{ row }">
-            <router-link :to="`/devices/${row.device_id}`" class="link">
-              #{{ row.device_id }}
-            </router-link>
-          </template>
-        </el-table-column>
-        <el-table-column label="变更内容" min-width="200">
-          <template #default="{ row }">{{ digest(row) }}</template>
-        </el-table-column>
-        <el-table-column prop="source" label="来源" width="120">
-          <template #default="{ row }">{{ row.source || '-' }}</template>
-        </el-table-column>
-      </el-table>
-    </el-card>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">活跃</div>
+        <div class="kpi-value" :class="{ zero: !activeCount }">
+          {{ activeCount === null ? '-' : activeCount }}
+        </div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">疑似下线</div>
+        <div class="kpi-value" :class="{ zero: !offlineCount }">
+          {{ offlineCount === null ? '-' : offlineCount }}
+        </div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">待裁决</div>
+        <div class="kpi-value kpi-accent" :class="{ zero: !pendingCount }">
+          {{ pendingCount === null ? '-' : pendingCount }}
+        </div>
+      </div>
+    </div>
+
+    <div v-if="pendingCount" class="pending-row">
+      <span class="pending-text">{{ pendingCount }} 项字段变更等待裁决</span>
+      <el-button type="primary" @click="$router.push('/conflicts')">去裁决</el-button>
+    </div>
+
+    <section class="section">
+      <div class="section-head">
+        <h2 class="section-title">最近变更</h2>
+        <span class="section-note">裁决生效后写入变更历史</span>
+      </div>
+      <el-card class="card" :body-style="{ padding: '0 16px' }">
+        <el-table
+          ref="tableRef"
+          :data="(stats?.recent_changes || []).slice(0, 5)"
+          @row-click="toggleExpand"
+        >
+          <el-table-column type="expand" width="40">
+            <template #default="{ row }">
+              <DiffDetail :diff="row.diff" />
+            </template>
+          </el-table-column>
+          <el-table-column label="设备" width="100">
+            <template #default="{ row }">
+              <router-link :to="`/devices/${row.device_id}`" class="link mono">
+                #{{ row.device_id }}
+              </router-link>
+            </template>
+          </el-table-column>
+          <el-table-column label="变更内容" min-width="220">
+            <template #default="{ row }">{{ digest(row) }}</template>
+          </el-table-column>
+          <el-table-column label="来源" width="120">
+            <template #default="{ row }">{{ row.source || '-' }}</template>
+          </el-table-column>
+          <el-table-column label="时间" min-width="170" align="right">
+            <template #default="{ row }">
+              <span class="time">{{ fmt(row.created_at) }}</span>
+            </template>
+          </el-table-column>
+        </el-table>
+      </el-card>
+    </section>
   </div>
 </template>
 
@@ -91,16 +118,21 @@ function digest(row: HistoryRow): string {
   return parts.length ? parts.join(',') : '-'
 }
 
-const statCards = computed(() => [
-  { label: '资产总数', value: stats.value?.total_devices ?? '-', color: '#409eff' },
-  { label: '活跃', value: stats.value?.active ?? '-', color: '#67c23a' },
-  {
-    label: '疑似下线',
-    value: stats.value?.suspected_offline ?? '-',
-    color: '#e6a23c',
-  },
-  { label: '待裁决', value: stats.value?.pending_changes ?? '-', color: '#f56c6c' },
-])
+const totalCount = computed(() => stats.value?.total_devices ?? null)
+const activeCount = computed(() => stats.value?.active ?? null)
+const offlineCount = computed(() => stats.value?.suspected_offline ?? null)
+const pendingCount = computed(() => stats.value?.pending_changes ?? null)
+
+// The one finding: the fact in today's data that most needs attention
+const finding = computed(() => {
+  const offline = stats.value?.suspected_offline ?? 0
+  const pending = stats.value?.pending_changes ?? 0
+  if (!offline && !pending) return '暂无待处理事项'
+  const parts: string[] = []
+  if (offline) parts.push(`${offline} 台疑似下线`)
+  if (pending) parts.push(`${pending} 项变更待裁决`)
+  return parts.join(', ')
+})
 
 function fmt(ts: string | null): string {
   if (!ts) return '-'
@@ -121,30 +153,97 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.stat {
-  text-align: center;
+.page-title {
+  font-size: 24px;
+  font-weight: 500;
+  margin: 0;
 }
-.stat-value {
-  font-size: 32px;
-  font-weight: bold;
+
+.finding {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: var(--muted);
 }
-.stat-label {
-  color: var(--el-text-color-secondary);
-  margin-top: 4px;
-}
-.card {
-  margin-top: 16px;
-}
-.card-header {
+
+/* KPIs are type, not tiles: labels over ink figures, one accent on the screen's question */
+.kpi-tray {
   display: flex;
-  justify-content: space-between;
+  background: #fafafa;
+  border-radius: var(--radius-card);
+  margin-top: 24px;
+}
+
+.kpi {
+  flex: 1;
+  padding: 14px 20px;
+  border-right: 1px solid var(--rule);
+}
+
+.kpi:last-child {
+  border-right: none;
+}
+
+.kpi-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.kpi-value {
+  margin-top: 2px;
+  font-size: 24px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+
+.kpi-accent {
+  color: var(--hue);
+}
+
+.zero {
+  color: var(--muted);
+}
+
+/* The screen's one job, one click away */
+.pending-row {
+  display: flex;
   align-items: center;
+  gap: 16px;
+  margin-top: 24px;
+  padding: 12px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
 }
-.link {
-  color: var(--el-color-primary);
-  text-decoration: none;
+
+.pending-text {
+  flex: 1;
+  font-size: 14px;
 }
-:deep(.el-table__row) {
-  cursor: pointer;
+
+.section {
+  margin-top: 48px;
+}
+
+.section-head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 500;
+  margin: 0;
+}
+
+.section-note {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.time {
+  color: var(--muted);
 }
 </style>

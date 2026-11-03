@@ -61,13 +61,14 @@ async function submit() {
   min-height: 100vh;
   display: grid;
   place-items: center;
-  background: linear-gradient(180deg, #eef4fb 0%, var(--el-bg-color-page) 100%);
+  background: var(--ground);
 }
 
 .login-card {
   width: 360px;
-  border-radius: 10px;
-  box-shadow: var(--el-box-shadow-light);
+  border-radius: 8px;
+  box-shadow: none;
+  border: 1px solid var(--border);
 }
 
 .logo-row {
