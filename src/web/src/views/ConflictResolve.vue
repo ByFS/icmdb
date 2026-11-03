@@ -426,7 +426,9 @@ async function submit() {
   display: flex;
   align-items: baseline;
   gap: 8px;
-  padding: 6px 0;
+  /* the hardware entries sit in a bordered box (1px border + 15px body padding),
+     the bare field rows need the same 16px inset to align value chips */
+  padding: 6px 0 6px 16px;
   font-size: 13px;
 }
 .fname {
