@@ -35,5 +35,6 @@ remote_payload.json
 .claude/
 .idea/
 .vscode/
+.taste-skill/
 *.swp
 .DS_Store
