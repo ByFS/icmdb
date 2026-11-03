@@ -124,10 +124,12 @@ def update_system_settings(
         )
         toggle_changed = True
 
-    record_audit(
-        session, current_username(request), "修改系统设置",
-        f"疑似下线阈值 {old_value} -> {body.offline_threshold_hours} 小时",
-    )
+    # The settings form auto-saves, an unchanged threshold must not produce an audit entry
+    if body.offline_threshold_hours != old_value:
+        record_audit(
+            session, current_username(request), "修改系统设置",
+            f"疑似下线阈值 {old_value} -> {body.offline_threshold_hours} 小时",
+        )
     session.commit()
     # Drop the cached toggle only after the new value is visible; invalidating
     # before the commit lets a concurrent request re-cache the stale value for

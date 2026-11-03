@@ -681,6 +681,33 @@ def test_system_settings_read_update(client):
     assert r.status_code == 422
 
 
+def test_system_settings_audit_only_on_change(client):
+    """Auto-save sends both fields every time, an unchanged value must not be audited"""
+    # toggle only, the threshold keeps its default 24 -> single audit entry for the toggle
+    r = client.put(
+        "/api/v1/settings/system",
+        json={"offline_threshold_hours": 24, "api_key_enabled": True},
+    )
+    assert r.status_code == 200
+
+    items = client.get("/api/v1/audit-logs").json()["items"]
+    assert [i["action"] for i in items] == ["修改系统设置"]
+    assert items[0]["detail"] == "API 密钥 开启"
+
+    # a real threshold change is audited
+    client.put("/api/v1/settings/system", json={"offline_threshold_hours": 48})
+    items = client.get("/api/v1/audit-logs").json()["items"]
+    assert items[0]["detail"] == "疑似下线阈值 24 -> 48 小时"
+
+    # nothing changed at all -> no new entry
+    r = client.put(
+        "/api/v1/settings/system",
+        json={"offline_threshold_hours": 48, "api_key_enabled": True},
+    )
+    assert r.status_code == 200
+    assert len(client.get("/api/v1/audit-logs").json()["items"]) == 2
+
+
 def test_system_settings_viewer_forbidden(client):
     """viewer is read-only, PUT returns 403"""
     client.post(
