@@ -1,20 +1,27 @@
 """Subnet scan: TCP probe liveness + ARP cache MAC + reverse DNS, no root needed
 
-Only locally connected subnets are scannable (non-direct targets are refused
-honestly: gateways may answer any connect and MAC addresses do not cross
-routers). Results are compared against CMDB devices but never stored; jobs
-live in process, a restart drops them.
+Any reachable subnet is scannable: TCP probes cross routers, but ARP-cache
+MACs only resolve on the local segment, so remote hosts keep MAC null.
+Results are compared against CMDB devices but never stored; jobs live in
+process, a restart drops them.
 """
 
 import ipaddress
 import secrets
 import socket
-import struct
 import threading
 from concurrent.futures import ThreadPoolExecutor
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
+from sqlmodel import Session
+
+from cmdb.api.auth import current_username
+from cmdb.database import get_session
+from cmdb.models import Device, utcnow
+from cmdb.schemas import AgentInfo, DevicePush, MgmtInfo, OsInfo
+from cmdb.services.audit import record_audit
+from cmdb.services.ingest import ingest_push
 
 router = APIRouter(tags=["scan"])
 
@@ -34,30 +41,10 @@ class ScanIn(BaseModel):
     cidr: str
 
 
-def _hex_le_ip(hex_value: str) -> str:
-    """Convert /proc/net/route hex (little-endian printed) to a dotted IP"""
-    value = struct.unpack("<I", bytes.fromhex(hex_value))[0]
-    return str(ipaddress.IPv4Address(value))
-
-
-def _directly_connected() -> list[ipaddress.IPv4Network]:
-    """Parse /proc/net/route into the list of locally connected subnets"""
-    networks: list[ipaddress.IPv4Network] = []
-    with open("/proc/net/route") as f:
-        lines = f.readlines()[1:]
-    for line in lines:
-        cols = line.split()
-        if len(cols) < 8:
-            continue
-        iface, destination, gateway, flags, _ref, _use, _metric, mask = cols[:8]
-        # RTF_UP without a gateway means a directly connected route
-        # Flags is plain hex without a prefix here (unlike /proc/net/arp's "0x2")
-        if not (int(flags, 16) & 0x1) or gateway != "00000000" or mask == "00000000":
-            continue
-        ip = _hex_le_ip(destination)
-        prefix = bin(int(mask, 16)).count("1")
-        networks.append(ipaddress.ip_network(f"{ip}/{prefix}", strict=False))
-    return networks
+class ScanAddIn(BaseModel):
+    job_id: str
+    ip: str
+    hostname: str | None = None
 
 
 def _probe_host(ip: str, ports: list[int]) -> bool:
@@ -173,17 +160,10 @@ def start_scan(body: ScanIn) -> dict:
     except ValueError:
         raise HTTPException(status_code=422, detail="Invalid CIDR")
     if network.version != 4:
-        # IPv6 would blow up in subnet_of() against the IPv4 connected list
+        # the probe pipeline is IPv4 only (TCP connect + ARP cache)
         raise HTTPException(status_code=422, detail="仅支持 IPv4 网段")
     if network.num_addresses > MAX_ADDRESSES:
         raise HTTPException(status_code=400, detail="网段过大, 最多扫描 65536 个地址")
-    connected = _directly_connected()
-    if not any(network.subnet_of(c) for c in connected):
-        allowed = ", ".join(str(c) for c in connected) or "无"
-        raise HTTPException(
-            status_code=400,
-            detail=f"仅支持扫描本机直连网段, 当前可扫: {allowed}",
-        )
 
     job_id = secrets.token_hex(8)
     while len(_jobs) >= MAX_JOBS:
@@ -208,3 +188,40 @@ def get_scan(job_id: str) -> dict:
     if job is None:
         raise HTTPException(status_code=404, detail="Scan job not found")
     return job
+
+
+@router.post("/scans/add")
+def add_scan_host(
+    body: ScanAddIn, request: Request, session: Session = Depends(get_session)
+) -> dict:
+    """Add a scanned host to the CMDB as a device
+
+    hostname falls back to the reverse-DNS name, then the IP itself. The push
+    ingest path is reused, so an existing hostname lands in a pending diff
+    instead of erroring, keeping the CMDB's conflict model
+    """
+    job = _jobs.get(body.job_id)
+    if job is None:
+        raise HTTPException(status_code=404, detail="扫描任务不存在或已过期")
+    host = next((h for h in job["hosts"] if h["ip"] == body.ip), None)
+    if host is None:
+        raise HTTPException(status_code=404, detail="该 IP 不在本次扫描结果中")
+    if host.get("known"):
+        raise HTTPException(status_code=409, detail="该主机已在 CMDB 中")
+    hostname = (body.hostname or "").strip() or host.get("hostname") or body.ip
+    push = DevicePush(
+        agent=AgentInfo(source="scan"),
+        os=OsInfo(hostname=hostname),
+        mgmt=MgmtInfo(mac=host.get("mac"), ip=body.ip, prefix_length=None),
+    )
+    result = ingest_push(session, push, utcnow(), update_last_pushed=False)
+    device = session.get(Device, result["device_id"])
+    # Reflect the new membership in the in-memory result so the UI updates on repoll
+    host["known"] = True
+    host["device_id"] = result["device_id"]
+    host["device_hostname"] = device.hostname if device else hostname
+    record_audit(
+        session, current_username(request), "扫描添加设备", f"{hostname} ({body.ip})"
+    )
+    session.commit()
+    return result

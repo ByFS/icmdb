@@ -485,6 +485,7 @@ location 与 owner 接口保留但已从界面移除, 界面只编辑 purpose:
 
 仅 admin(其他用户 403)请求体 `{"offline_threshold_hours": 24, "api_key_enabled": false}`,
 阈值取值 1 ~ 8760,非法值 422;`api_key_enabled` 可选, 不传保持不变
+阈值与开关实际变化时才写审计日志(前端改动即自动保存, 一次请求可能只改其中一项)
 开启后采集器推送必须携带有效密钥(见 [API 密钥](#12-api-密钥))
 
 ## 9. 用户登录
@@ -635,7 +636,7 @@ curl -H "X-API-Key: cmdb_你的密钥" http://<host>:8080/api/v1/devices
 扫描指定网段内的存活主机并与现有 CMDB 设备对比(仅 admin):
 
 - 纯 Python 实现:TCP connect 探测存活 + 内核 ARP 缓存读 MAC + 反向 DNS,无需 root
-- **仅支持本机直连网段**(非直连诚实拒绝: 网关可能应答所有连接导致存活误报, 且 MAC 是二层地址不会跨路由);错误信息会带上当前可扫网段
+- **任意可达网段均可扫描**(TCP 探活可跨路由; ARP 缓存取 MAC 仅本网段有效, 跨网段主机 MAC 为空)
 - 扫描为**后台任务**:发起后立即返回 job_id,前端轮询进度;结果不入库, 服务重启丢失
 - 网段过大限制: 最多 65536 个地址
 
@@ -645,7 +646,19 @@ curl -H "X-API-Key: cmdb_你的密钥" http://<host>:8080/api/v1/devices
 {"cidr": "192.168.1.0/24"}
 ```
 
-返回 `{"job_id": "..."}`;CIDR 非法返回 422,非直连网段返回 400
+返回 `{"job_id": "..."}`;CIDR 非法返回 422,超过 65536 个地址返回 400
+
+### `POST /api/v1/scans/add`
+
+把扫描结果中的主机直接添加为设备(admin):
+
+```json
+{"job_id": "...", "ip": "192.168.1.10", "hostname": "可选"}
+```
+
+- `hostname` 缺省用反查名, 无则用 IP;走推送 ingest 路径, 已存在的主机名进 diff 裁决
+- 主机已在库返回 409,任务不存在返回 404,IP 不在结果中返回 404
+- 返回 `{"result": "created" | "diff_created", "device_id": ..., "pending_change_id": ...}`
 
 ### `GET /api/v1/scans/{job_id}`
 

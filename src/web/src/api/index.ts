@@ -333,6 +333,12 @@ export const api = {
 
   startScan: (cidr: string) => request<{ job_id: string }>(`${BASE}/scans`, json('POST', { cidr })),
 
+  addScanHost: (jobId: string, ip: string, hostname?: string) =>
+    request<{ result: string; device_id: number; pending_change_id: number | null }>(
+      `${BASE}/scans/add`,
+      json('POST', { job_id: jobId, ip, hostname }),
+    ),
+
   getScan: (jobId: string) => request<ScanJob>(`${BASE}/scans/${jobId}`),
 }
 

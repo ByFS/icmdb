@@ -33,7 +33,7 @@
           {{ job.hosts.filter(h => !h.known).length }}
         </span>
       </template>
-      <el-table :data="job.hosts" border>
+      <el-table :data="job.hosts">
         <el-table-column resizable prop="ip" label="IP" min-width="140" show-overflow-tooltip/>
         <el-table-column resizable prop="mac" label="MAC" min-width="170" show-overflow-tooltip>
           <template #default="{ row }">{{ row.mac || '-' }}</template>
@@ -51,21 +51,83 @@
             <el-tag v-else type="warning" size="small">未入库</el-tag>
           </template>
         </el-table-column>
+        <el-table-column label="操作" width="90">
+          <template #default="{ row }">
+            <el-button v-if="!row.known" link @click="openAdd(row)">添加</el-button>
+            <span v-else class="added-mark">-</span>
+          </template>
+        </el-table-column>
       </el-table>
     </el-card>
+
+    <el-dialog v-model="addVisible" title="添加设备" width="400px">
+      <div class="add-info">
+        <div class="add-line">IP: {{ addForm.ip }}</div>
+        <div class="add-line">MAC: {{ addForm.mac || '-' }}</div>
+      </div>
+      <el-form label-position="top">
+        <el-form-item label="Hostname">
+          <el-input
+            v-model="addForm.hostname"
+            placeholder="缺省用反查名, 无则用 IP"
+            @keyup.enter="confirmAdd"
+          />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="addVisible = false">取消</el-button>
+        <el-button type="primary" :loading="adding" @click="confirmAdd">添加</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import { onUnmounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
-import { api, ScanJob } from '../api'
+import { api, ScanHost, ScanJob } from '../api'
 
 const cidr = ref('')
 const job = ref<ScanJob | null>(null)
 const scanning = ref(false)
 let pollTimer: ReturnType<typeof setTimeout> | null = null
 let stopped = false
+
+const addVisible = ref(false)
+const adding = ref(false)
+const addForm = ref<{ ip: string; mac: string | null; hostname: string; row: ScanHost | null }>({
+  ip: '',
+  mac: null,
+  hostname: '',
+  row: null,
+})
+
+function openAdd(row: ScanHost) {
+  addForm.value = { ip: row.ip, mac: row.mac, hostname: row.hostname || '', row }
+  addVisible.value = true
+}
+
+async function confirmAdd() {
+  if (!job.value || !addForm.value.row) return
+  adding.value = true
+  try {
+    const res = await api.addScanHost(
+      job.value.job_id,
+      addForm.value.ip,
+      addForm.value.hostname || undefined,
+    )
+    // mark the row known immediately, then repoll once so the linked name lands
+    addForm.value.row.known = true
+    addForm.value.row.device_id = res.device_id
+    addVisible.value = false
+    ElMessage.success('已添加')
+    await poll(job.value.job_id)
+  } catch (e) {
+    ElMessage.error((e as Error).message)
+  } finally {
+    adding.value = false
+  }
+}
 
 async function start() {
   const target = cidr.value.trim()
@@ -107,7 +169,21 @@ onUnmounted(() => {
 
 <style scoped>
 .card {
-  margin-top: 16px;
+  margin-top: 12px;
+}
+
+.add-info {
+  margin-bottom: 12px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.add-line {
+  line-height: 22px;
+}
+
+.added-mark {
+  color: var(--muted);
 }
 .controls {
   display: flex;
