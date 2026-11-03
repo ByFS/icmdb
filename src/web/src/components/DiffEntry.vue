@@ -156,7 +156,8 @@ const headText = computed(() => {
   display: flex;
   align-items: baseline;
   gap: 8px;
-  padding: 3px 4px;
+  /* no horizontal padding: the entry body inset already aligns with the field rows */
+  padding: 3px 0;
   font-size: 13px;
 }
 .fname {

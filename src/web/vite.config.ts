@@ -12,9 +12,12 @@ export default defineConfig({
   build: {
     outDir: '../cmdb/static',
     emptyOutDir: true,
-    // Element Plus 等第三方库拆分为独立 vendor chunk,避免主包过大
     rollupOptions: {
       output: {
+        // content-hash asset names: css-only changes must also bust the browser cache
+        // (vite's default names css after its js chunk, so a pure-css fix kept the old name)
+        assetFileNames: 'assets/[name]-[hash][extname]',
+        // Element Plus 等第三方库拆分为独立 vendor chunk,避免主包过大
         manualChunks: {
           vendor: ['vue', 'vue-router', 'element-plus', '@element-plus/icons-vue'],
         },
