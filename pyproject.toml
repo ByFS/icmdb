@@ -1,6 +1,6 @@
 [project]
 name = "cmdb"
-version = "2.2.0"
+version = "2.3.0"
 description = "CMDB v2 — collector push, field-level diff conflict resolution, storage and display"
 requires-python = ">=3.11"
 dependencies = [

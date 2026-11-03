@@ -2,9 +2,9 @@
 
 > English version: [en/EXAMPLE.md](en/EXAMPLE.md)
 
-> 采集器推送格式与完整示例。接口细节见 [API.md](./API.md)。
-> 示例 JSON 文件:`tests/data/collector_example_full.json`(可直接用 curl 推送)。
-> **本文档与示例数据均为模拟数据**(主机名、序列号、MAC、IP、UUID 等皆为虚构,IP 用 RFC 5737 文档段),非真实设备。
+> 采集器推送格式与完整示例接口细节见 [API.md](./API.md)
+> 示例 JSON 文件:`tests/data/collector_example_full.json`(可直接用 curl 推送)
+> **本文档与示例数据均为模拟数据**(主机名, 序列号,MAC,IP,UUID 等皆为虚构,IP 用 RFC 5737 文档段),非真实设备
 
 ## 完整示例(全部硬件字段)
 
@@ -360,18 +360,18 @@
 
 ## 字段说明
 
-各字段含义与必填性见 [API.md](./API.md#1-采集推送) 的字段说明表,此处只列要点:
+各字段含义与必填性见 [API.md](./API.md#1-采集推送) 的字段说明表, 此处只列要点:
 
 - `agent` / `os` / `mgmt` / `hardware` 四段结构;`os.hostname` 是设备唯一匹配键
-- 各硬件条目的身份:网卡 `name`、内存/CPU `slot`、硬盘/电源 `serial_number`、GPU `uuid`
-- 所有硬件段均可选,不推不影响现有推送;`hardware.memory` / `cpus` / `disks` / `psus` / `gpu` 缺省即不更新对应类别
-- `agent.full_sync=true`(默认)= 全量同步:库中多出的网卡/内存/CPU/硬盘/电源/GPU 进 diff 候删
+- 各硬件条目的身份: 网卡 `name`,内存/CPU `slot`,硬盘/电源 `serial_number`,GPU `uuid`
+- 所有硬件段均可选, 不推不影响现有推送;`hardware.memory` / `cpus` / `disks` / `psus` / `gpu` 缺省即不更新对应类别
+- `agent.full_sync=true`(默认)= 全量同步: 库中多出的网卡/内存/CPU/硬盘/电源/GPU 进 diff 候删
 
 ## iagent 采集器实采格式
 
-iagent(Go 采集器)按同一四段结构推送,但对齐实采语义:**单字段采集失败置 null,
+iagent(Go 采集器)按同一四段结构推送, 但对齐实采语义:**单字段采集失败置 null,
 身份为 null 的整条条目自动丢弃**(不进 diff 与存储),`mgmt` / `hardware` /
-`nics[].ips` 可为 null,`agent.timestamp` 未采集时发空串。典型推送体:
+`nics[].ips` 可为 null,`agent.timestamp` 未采集时发空串典型推送体:
 
 ```json
 {
@@ -415,9 +415,9 @@ iagent(Go 采集器)按同一四段结构推送,但对齐实采语义:**单字�
 }
 ```
 
-服务端处理效果:身份为 null 的条目(空槽位内存、无 uuid 的 GPU、无 SN 的电源等)
+服务端处理效果: 身份为 null 的条目(空槽位内存, 无 uuid 的 GPU,无 SN 的电源等)
 整条丢弃;`mgmt=null` 不写管理口;`timestamp=""` 取服务器接收时间兜底;
-`os.virt` 入库并在虚拟化类型变化时进 diff。
+`os.virt` 入库并在虚拟化类型变化时进 diff
 
 ## 推送命令
 
@@ -429,9 +429,9 @@ curl -X POST http://<host>:8080/api/v1/devices \
 
 ## 测试场景
 
-1. **首次推送** → `created`(hostname 不存在)或 `diff_created`(已存在,硬件条目作为新增条目进裁决)
-2. **字段变化再推**(如 DIMM_A1 换型号、CPU 换型号、`os.virt` 变化)→ `diff_created`,字段级 changed
-3. **full_sync=true 少一块硬件**(如删掉 DIMM_B1 或一块硬盘)→ 进 diff 候删,裁决选 `new` 即删除
+1. **首次推送** → `created`(hostname 不存在)或 `diff_created`(已存在, 硬件条目作为新增条目进裁决)
+2. **字段变化再推**(如 DIMM_A1 换型号,CPU 换型号,`os.virt` 变化)→ `diff_created`,字段级 changed
+3. **full_sync=true 少一块硬件**(如删掉 DIMM_B1 或一块硬盘)→ 进 diff 候删, 裁决选 `new` 即删除
 4. **重复推送相同数据** → `unchanged`
-5. **iagent 格式推送**(含 null 身份条目)→ null 条目丢弃,其余正常入库
+5. **iagent 格式推送**(含 null 身份条目)→ null 条目丢弃, 其余正常入库
 6. **裁决**:`POST /api/v1/pending-changes/{id}/resolve`,请求体逐条目选 `new` / `old`(默认 UI 全选新值);生效后写变更历史

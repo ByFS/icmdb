@@ -17,6 +17,7 @@ from cmdb.api.dashboard import router as dashboard_router
 from cmdb.api.devices import router as devices_router
 from cmdb.api.history import router as history_router
 from cmdb.api.pending_changes import router as pending_changes_router
+from cmdb.api.scan import router as scan_router
 from cmdb.api.settings import router as settings_router
 from cmdb.api.users import router as users_router
 from cmdb.config import settings
@@ -56,6 +57,8 @@ def _is_admin_path(path: str, method: str) -> bool:
         return True
     if path.startswith("/api/v1/api-keys"):
         return True
+    if path.startswith("/api/v1/scans"):
+        return True
     if method == "PUT" and path.startswith("/api/v1/settings"):
         return True
     if method == "DELETE" and path.startswith("/api/v1/devices"):
@@ -83,6 +86,7 @@ def create_app() -> FastAPI:
     app.include_router(users_router, prefix="/api/v1")
     app.include_router(settings_router, prefix="/api/v1")
     app.include_router(api_keys_router, prefix="/api/v1")
+    app.include_router(scan_router, prefix="/api/v1")
     app.include_router(audit_logs_router, prefix="/api/v1")
 
     # Session and role gating: /api/v1 requires login except for login/session check;
@@ -146,12 +150,10 @@ def _user_role(username: str) -> str:
 
 
 def _api_key_enabled() -> bool:
-    """API key feature toggle (system setting api_key_enabled, default off)"""
-    from cmdb.database import get_engine_cached
-    from cmdb.api.settings import get_api_key_enabled
+    """API key feature toggle (system setting api_key_enabled, default off), cached in settings"""
+    from cmdb.api.settings import get_api_key_enabled_cached
 
-    with Session(get_engine_cached()) as session:
-        return get_api_key_enabled(session)
+    return get_api_key_enabled_cached()
 
 
 def _find_api_key(key: str):

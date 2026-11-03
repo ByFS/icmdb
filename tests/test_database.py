@@ -76,19 +76,23 @@ def test_migrate_adds_missing_columns(tmp_path):
         )
         conn.commit()
 
-    init_db(eng)  # production flow runs create_all first (creates devicetag and other new tables) then migrates
+    # production flow runs create_all first (creates devicetag and other new tables) then migrates
+    init_db(eng)
     migrate(eng)
     with eng.connect() as conn:
         cols = {row[1] for row in conn.exec_driver_sql("PRAGMA table_info(device)")}
-        assert "tags" not in cols  # legacy column dropped
+        # legacy column dropped
+        assert "tags" not in cols
         row = conn.exec_driver_sql(
             "SELECT hostname FROM device WHERE hostname = 'old-host'"
         ).fetchone()
-        assert row[0] == "old-host"  # existing data preserved
+        # existing data preserved
+        assert row[0] == "old-host"
         tags = conn.exec_driver_sql(
             "SELECT name FROM devicetag WHERE device_id = 1 ORDER BY id"
         ).fetchall()
-        assert [t[0] for t in tags] == ["生产", "web"]  # legacy tags migrated into the new table
+        # legacy tags migrated into the new table
+        assert [t[0] for t in tags] == ["生产", "web"]
         hcols = {
             row[1] for row in conn.exec_driver_sql("PRAGMA table_info(changehistory)")
         }

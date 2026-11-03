@@ -70,7 +70,8 @@ def _apply_memory(session: Session, device: Device, entry: dict) -> None:
     ).first()
 
     if entry["kind"] == "added":
-        if existing is not None:  # already exists (e.g. leftover from an old diff), skip idempotently
+        # already exists (e.g. leftover from an old diff), skip idempotently
+        if existing is not None:
             return
         new = entry["new"]
         session.add(
@@ -112,7 +113,8 @@ def _apply_gpu(session: Session, device: Device, entry: dict) -> None:
     ).first()
 
     if entry["kind"] == "added":
-        if existing is not None:  # already exists (e.g. leftover from an old diff), skip idempotently
+        # already exists (e.g. leftover from an old diff), skip idempotently
+        if existing is not None:
             return
         new = entry["new"]
         session.add(
@@ -152,7 +154,8 @@ def _apply_cpu(session: Session, device: Device, entry: dict) -> None:
     ).first()
 
     if entry["kind"] == "added":
-        if existing is not None:  # already exists (e.g. leftover from an old diff), skip idempotently
+        # already exists (e.g. leftover from an old diff), skip idempotently
+        if existing is not None:
             return
         session.add(
             Cpu(device_id=device.id, slot=slot, model=entry["new"].get("model"))
@@ -187,7 +190,8 @@ def _apply_disk(session: Session, device: Device, entry: dict) -> None:
     ).first()
 
     if entry["kind"] == "added":
-        if existing is not None:  # already exists (e.g. leftover from an old diff), skip idempotently
+        # already exists (e.g. leftover from an old diff), skip idempotently
+        if existing is not None:
             return
         new = entry["new"]
         session.add(
@@ -231,7 +235,8 @@ def _apply_psu(session: Session, device: Device, entry: dict) -> None:
     ).first()
 
     if entry["kind"] == "added":
-        if existing is not None:  # already exists (e.g. leftover from an old diff), skip idempotently
+        # already exists (e.g. leftover from an old diff), skip idempotently
+        if existing is not None:
             return
         new = entry["new"]
         session.add(
@@ -268,7 +273,8 @@ def _apply_nic(session: Session, device: Device, entry: dict) -> None:
     ).first()
 
     if kind == "added":
-        if existing is not None:  # already exists (e.g. leftover from an old diff), skip idempotently
+        # already exists (e.g. leftover from an old diff), skip idempotently
+        if existing is not None:
             return
         nic = Nic(device_id=device.id, name=name, mac=entry["new"].get("mac"))
         session.add(nic)
@@ -284,7 +290,8 @@ def _apply_nic(session: Session, device: Device, entry: dict) -> None:
             return
         for nip in session.exec(select(NicIP).where(NicIP.nic_id == existing.id)).all():
             session.delete(nip)
-        session.flush()  # delete child rows first; without relationships the UoW delete order isn't guaranteed
+        # delete child rows first; without relationships the UoW delete order isn't guaranteed
+        session.flush()
         session.delete(existing)
         return
 
@@ -297,10 +304,12 @@ def _apply_nic(session: Session, device: Device, entry: dict) -> None:
         elif change["field"] == "ips":
             new_ips = {ip["ip"]: ip["prefix_length"] for ip in change["new"]}
             current = session.exec(select(NicIP).where(NicIP.nic_id == existing.id)).all()
-            for nip in current:  # delete ones missing from the new list
+            # delete ones missing from the new list
+            for nip in current:
                 if nip.ip not in new_ips:
                     session.delete(nip)
-            for ip, prefix in new_ips.items():  # add the missing ones
+            # add the missing ones
+            for ip, prefix in new_ips.items():
                 if not any(nip.ip == ip for nip in current):
                     session.add(NicIP(nic_id=existing.id, ip=ip, prefix_length=prefix))
 

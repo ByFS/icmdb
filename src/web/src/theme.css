@@ -1,0 +1,210 @@
+/* iCMDB global theme - achromatic-ledger app style (taste-skill v2.1, seed 1552668489)
+   The move: no colour in the chrome, ink on data, the one chart hue on the main data
+   element, a small signal where a figure changed. Face: a blue-grey ground from the
+   product's world (a hardware ledger), cards stay white. */
+
+:root {
+  --ground: #f2f4f7;
+  --surface: #ffffff;
+  --raised: #eef0f3;
+  --border: #e6e6e6;
+  --rule: #ececec;
+  --control: #d4d4d4;
+  --text: #0a0a0a;
+  --muted: #6b6b6b;
+  --accent: #141414;
+  --hue: #1d5fbf;
+  --positive: #2e7d32;
+  --negative: #c4242a;
+  --warning: #92400e;
+  --pill-positive-bg: #dcfae5;
+  --pill-positive-ink: #04250e;
+  --pill-negative-bg: #ffedea;
+  --pill-negative-ink: #831c1e;
+  --pill-warning-bg: #fffbeb;
+  --pill-warning-ink: #92400e;
+  --pill-neutral-bg: #eeeeee;
+  --pill-neutral-ink: #3d3d3d;
+  --radius-card: 8px;
+  --radius-control: 6px;
+  --gap: 12px;
+  --pad: 24px;
+}
+
+/* Element Plus token mapping: primary is near-black, chrome holds no brand hue */
+:root {
+  --el-color-primary: #141414;
+  --el-color-primary-light-3: #424242;
+  --el-color-primary-light-5: #6e6e6e;
+  --el-color-primary-light-7: #a3a3a3;
+  --el-color-primary-light-8: #c2c2c2;
+  --el-color-primary-light-9: #e5e5e5;
+  --el-color-primary-dark-2: #000000;
+  --el-color-success: #2e7d32;
+  --el-color-warning: #92400e;
+  --el-color-danger: #c4242a;
+  --el-color-info: #6b6b6b;
+  --el-bg-color-page: var(--ground);
+  --el-bg-color: var(--surface);
+  --el-border-color: var(--border);
+  --el-border-color-light: var(--border);
+  --el-border-color-lighter: var(--rule);
+  --el-text-color-primary: var(--text);
+  --el-text-color-regular: #333333;
+  --el-text-color-secondary: var(--muted);
+  --el-border-radius-base: 6px;
+  --el-border-radius-small: 4px;
+  --el-input-border-color: var(--control);
+  --el-input-hover-border-color: #b3b3b3;
+}
+
+body {
+  margin: 0;
+  font-family: "Geist", Inter, "Helvetica Neue", system-ui, -apple-system, sans-serif;
+  color: var(--text);
+  background: var(--ground);
+}
+
+.mono {
+  font-family: "Geist Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+/* Tables: rules and alignment, no zebra, no header bands, numbers tabular */
+.el-table {
+  --el-table-border-color: var(--rule);
+  --el-table-header-bg-color: transparent;
+  --el-table-row-hover-bg-color: #f7f8fa;
+  font-variant-numeric: tabular-nums;
+}
+
+.el-table th.el-table__cell {
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.el-table td.el-table__cell {
+  padding: 12px 0;
+}
+
+/* Cards: flat white surfaces on the ground, hairline edge, no shadow */
+.el-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: none;
+}
+
+.el-card.is-always-shadow,
+.el-card.is-hover-shadow:hover,
+.el-card.is-hover-shadow:focus {
+  box-shadow: none;
+}
+
+/* Sidebar menu: active item is a neutral grey pill, never a coloured bar */
+.el-menu {
+  border-right: none;
+  background: transparent;
+}
+
+.el-menu-item {
+  height: 34px;
+  line-height: 34px;
+  margin: 2px 8px;
+  border-radius: 6px;
+  color: var(--muted);
+}
+
+.el-menu-item .el-icon {
+  color: var(--muted);
+}
+
+.el-menu-item:hover {
+  background: var(--raised);
+  color: var(--text);
+}
+
+.el-menu-item.is-active {
+  background: #e9e9e9;
+  color: var(--text);
+}
+
+.el-menu-item.is-active .el-icon {
+  color: var(--text);
+}
+
+/* Buttons: near-black primary, quiet grey pills as secondary */
+.el-button {
+  border-radius: var(--radius-control);
+  height: 36px;
+}
+
+.el-button--primary {
+  --el-button-bg-color: #141414;
+  --el-button-border-color: #141414;
+  --el-button-hover-bg-color: #333333;
+  --el-button-hover-border-color: #333333;
+}
+
+.el-button--default {
+  --el-button-border-color: #d4d4d4;
+  --el-button-bg-color: #e5e5e5;
+  --el-button-hover-bg-color: #d9d9d9;
+  --el-button-hover-border-color: #c7c7c7;
+  --el-button-text-color: var(--text);
+}
+
+/* Collapse panels: breathe inside the frame */
+.el-collapse-item__header {
+  padding: 0 16px;
+}
+
+.el-collapse-item__content {
+  padding: 12px 16px;
+}
+
+/* Tags: pale pills, colour only on data */
+.el-tag {
+  border-radius: 6px;
+  border: none;
+}
+
+.el-tag--success {
+  background: var(--pill-positive-bg);
+  color: var(--pill-positive-ink);
+}
+
+.el-tag--warning {
+  background: var(--pill-warning-bg);
+  color: var(--pill-warning-ink);
+}
+
+.el-tag--danger {
+  background: var(--pill-negative-bg);
+  color: var(--pill-negative-ink);
+}
+
+.el-tag--info {
+  background: var(--pill-neutral-bg);
+  color: var(--pill-neutral-ink);
+}
+
+/* Dialogs: flat, rounded */
+.el-dialog {
+  border-radius: 8px;
+}
+
+/* Data links: ink, hue on hover only */
+a.link {
+  color: var(--text);
+  text-decoration: none;
+}
+
+a.link:hover {
+  color: var(--hue);
+}
+
+/* Pagination: quiet */
+.el-pagination {
+  --el-pagination-button-bg-color: transparent;
+}

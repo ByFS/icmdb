@@ -13,7 +13,7 @@
 
 ## Table of Contents
 
-- [Collector push](#1-collector-push) — the only endpoint a collector needs to integrate with
+- [Collector push](#1-collector-push) - the only endpoint a collector needs to integrate with
 - [Device list / detail / delete](#2-devices)
 - [Pending conflicts](#3-pending-conflicts)
 - [Change history](#4-change-history)
@@ -25,6 +25,7 @@
 - [User management](#10-user-management)
 - [Operation audit](#11-operation-audit)
 - [API keys](#12-api-keys)
+- [Subnet scan](#13-subnet-scan)
 
 ---
 
@@ -144,7 +145,7 @@ Collectors push device data. Matching is by hostname, with three outcomes:
 **Tolerance semantics aligned with the iagent collector's real-world collection** (since v2.3):
 
 - Identity fields (slot / uuid / serial_number other than NIC `name`) may be null: when a single field
-  fails to collect it is set to null, and **an entry whose identity is null is dropped automatically** —
+  fails to collect it is set to null, and **an entry whose identity is null is dropped automatically** -
   it never enters the diff or storage and does not affect acceptance of the whole payload
 - `mgmt` / `hardware` may be null: treated as not collected, existing data in the DB is not cleared
 - `nics[].ips` may be null: a NIC with no IPs sends no IPs
@@ -171,13 +172,13 @@ curl -X POST http://<host>:8080/api/v1/devices \
 
 On `diff_created`, `pending_change_id` is the pending-change record id, which can be used to resolve it in the UI or via the API.
 
-**Conflict merging**: when a device already has one pending record that has not been handled yet, and another conflicting push arrives, the **latest push wins** — the diff is recomputed as a whole and replaces the same record, without accumulating with old diffs; multiple records never pile up.
+**Conflict merging**: when a device already has one pending record that has not been handled yet, and another conflicting push arrives, the **latest push wins** - the diff is recomputed as a whole and replaces the same record, without accumulating with old diffs; multiple records never pile up.
 
 ---
 
 ## 2. Devices
 
-### `GET /api/v1/devices` — Device list
+### `GET /api/v1/devices` - Device list
 
 **Query parameters**:
 
@@ -229,11 +230,11 @@ curl "http://<host>:8080/api/v1/devices?page=1&search=demo&status=active"
 
 `status` is computed dynamically: if no push has arrived beyond the threshold (default 1 day, i.e. 24 hours; configurable via `CMDB_OFFLINE_THRESHOLD_DAYS`), the device is marked `suspected_offline`; data is not deleted automatically.
 
-### `GET /api/v1/devices/{id}` — Device detail
+### `GET /api/v1/devices/{id}` - Device detail
 
 The response structure is the same as a list item. Returns 404 if the device does not exist.
 
-### `DELETE /api/v1/devices/{id}` — Manual delete
+### `DELETE /api/v1/devices/{id}` - Manual delete
 
 Hard-deletes the device and its NIC, memory, CPU, disk, PSU and GPU data (pending-change records are deleted along with it); **change history is preserved**. Returns 204 on success.
 
@@ -245,7 +246,7 @@ curl -X DELETE http://<host>:8080/api/v1/devices/1
 
 ## 3. Pending Conflicts
 
-### `GET /api/v1/pending-changes` — Pending list
+### `GET /api/v1/pending-changes` - Pending list
 
 **Query parameters**: `status` defaults to `pending`; `all` shows everything including handled records (applied / discarded).
 
@@ -297,11 +298,11 @@ The `kind` of `nics` entries:
 
 `memory` / `cpus` entries share the structure above (`slot` as identity) with the same `kind` meanings. `disks` / `psus` entries share the structure above (`serial_number` as identity), as do `gpus` entries (`uuid` as identity).
 
-### `GET /api/v1/pending-changes/{id}` — Diff detail
+### `GET /api/v1/pending-changes/{id}` - Diff detail
 
 Returns a single record (payload + diff).
 
-### `POST /api/v1/pending-changes/{id}/resolve` — Resolve
+### `POST /api/v1/pending-changes/{id}/resolve` - Resolve
 
 Choose `new` (adopt the new data) or `old` (keep the current state) for each entry. For a `removed` NIC, choosing `new` means deleting that NIC.
 
@@ -371,7 +372,7 @@ curl "http://<host>:8080/api/v1/change-history?device_id=1"
 }
 ```
 
-### `GET /api/v1/change-history/{id}` — Change detail
+### `GET /api/v1/change-history/{id}` - Change detail
 
 Contains the full diff at resolution time.
 
@@ -401,12 +402,12 @@ curl "http://<host>:8080/api/v1/dashboard"
 
 ## 6. Device Extension Endpoints
 
-### `GET /api/v1/devices/export/csv` — Export CSV
+### `GET /api/v1/devices/export/csv` - Export CSV
 
 Exports all devices as UTF-8 with BOM (Excel Chinese-compatible); includes the purpose
 metadata column. `Content-Disposition: attachment`.
 
-### `POST /api/v1/devices/import/csv` — CSV import
+### `POST /api/v1/devices/import/csv` - CSV import
 
 Uploaded as `multipart/form-data` with the field name `file`; the row format matches the export (so it can be imported back directly).
 
@@ -425,7 +426,7 @@ with `source` marked as `csv_import`; the purpose metadata is set along with the
 
 `errors` describes rows that failed to parse (missing hostname etc.), without affecting the import of the remaining rows.
 
-### `PUT /api/v1/devices/{id}/tags` — Update tags (endpoint kept)
+### `PUT /api/v1/devices/{id}/tags` - Update tags (endpoint kept)
 
 ```json
 {"tags": ["production", "web"]}
@@ -433,7 +434,7 @@ with `source` marked as `csv_import`; the purpose metadata is set along with the
 
 The endpoint remains (API compatible); the tags feature has been removed from the UI and CSV.
 
-### `PUT /api/v1/devices/{id}/metadata` — Update device info
+### `PUT /api/v1/devices/{id}/metadata` - Update device info
 
 Updates CMDB metadata (location/owner/purpose); pushes never change it, only UI/import editing;
 location and owner endpoints remain but are removed from the UI, the UI edits purpose only:
@@ -445,7 +446,7 @@ location and owner endpoints remain but are removed from the UI, the UI edits pu
 All fields are optional: `None` = no change, empty string = clear; leading and trailing whitespace is trimmed automatically.
 Returns `{"device_id": 1, "location": "...", "owner": "...", "purpose": "..."}`.
 
-### `POST /api/v1/devices/batch-delete` — Batch delete
+### `POST /api/v1/devices/batch-delete` - Batch delete
 
 ```json
 {"ids": [1, 2, 3]}
@@ -482,6 +483,7 @@ Returns `{"offline_threshold_hours": 24, "api_key_enabled": false}` (the suspect
 
 Admin only (others get 403). Request body `{"offline_threshold_hours": 24, "api_key_enabled": false}`,
 threshold value range 1 ~ 8760, invalid values get 422; `api_key_enabled` is optional and kept unchanged when omitted.
+An audit entry is written only for the field that actually changed (the settings page auto-saves, one request may touch a single field).
 When enabled, collector pushes must carry a valid key (see [API keys](#12-api-keys)).
 
 ## 9. User Login
@@ -538,15 +540,15 @@ Returns all users: `{"items": [{"id": 1, "username": "admin", "role": "admin", "
 
 `role` can only be `admin` / `viewer` (default viewer); a duplicate username returns 409.
 
-### `PUT /api/v1/users/{id}` — Reset password / change role
+### `PUT /api/v1/users/{id}` - Reset password / change role
 
 ```json
 {"password": "new password"}
 ```
 
-Both `password` and `role` are optional — whichever is passed is changed; the last admin cannot be demoted (409).
+Both `password` and `role` are optional - whichever is passed is changed; the last admin cannot be demoted (409).
 
-### `DELETE /api/v1/users/{id}` — Delete user
+### `DELETE /api/v1/users/{id}` - Delete user
 
 Cannot delete yourself or the last admin (409).
 
@@ -583,7 +585,7 @@ Sorted by time descending; viewer access returns 403.
 API keys are for **collector push + read-only API access**, closing the "forged pushes have no gate" gap:
 
 - Format `cmdb_` + 32 hex chars; the full key is stored (viewable/copyable anytime) with a 12-char prefix for identification
-- Permissions: with a key, `POST /devices` (push) and any `GET` are allowed; **all other writes and the key management endpoints return 403** — the blast radius of a leaked key stays contained
+- Permissions: with a key, `POST /devices` (push) and any `GET` are allowed; **all other writes and the key management endpoints return 403** - the blast radius of a leaked key stays contained
 - Default **off** (system setting `api_key_enabled`): nothing changes, push stays open and the session cookie flow is untouched
 - When on: `POST /devices` requires a valid key, missing or invalid returns 401; requests with `X-API-Key` are handled under key permissions (checked before the session cookie); each request refreshes the key's last_used_at
 - Revocation (delete) takes effect immediately; requests using the key get 401 right away; creation and revocation are both audited
@@ -606,7 +608,7 @@ Returns all keys (**including the full key value**, copyable anytime):
 
 Returns the newly created key (including the full key value); a blank name returns 422. Name keys per collector/source so they can be revoked individually.
 
-### `DELETE /api/v1/api-keys/{id}` — revoke a key
+### `DELETE /api/v1/api-keys/{id}` - revoke a key
 
 Returns `{"ok": true}`; a nonexistent key returns 404.
 
@@ -626,6 +628,44 @@ Read-only GET works the same way:
 ```bash
 curl -H "X-API-Key: cmdb_<your-key>" http://<host>:8080/api/v1/devices
 ```
+
+## 13. Subnet Scan
+
+Scan a specified subnet for live hosts and compare them against existing CMDB devices (admin only):
+
+- Pure Python: TCP connect liveness probe + kernel ARP cache MAC + reverse DNS, no root needed
+- **Locally connected subnets only** (non-direct targets are refused honestly: gateways may answer any connect, and MAC addresses do not cross routers); the error message lists the scannable subnets
+- Scans run as a **background job**: the start call returns a job_id immediately, the frontend polls for progress; results are not stored and a restart drops them
+- Size cap: at most 65536 addresses per scan
+
+### `POST /api/v1/scans`
+
+```json
+{"cidr": "192.168.1.0/24"}
+```
+
+Returns `{"job_id": "..."}`; an invalid CIDR returns 422, a non-local subnet returns 400.
+
+### `GET /api/v1/scans/{job_id}`
+
+```json
+{
+  "job_id": "...", "cidr": "192.168.1.0/24",
+  "status": "running", "scanned": 128, "total": 254,
+  "hosts": [],
+  "error": null
+}
+```
+
+`status` is `running` / `done` / `error`; when done, `hosts` holds the discovered live hosts:
+
+```json
+{"ip": "192.168.1.10", "mac": "AA:BB:CC:DD:EE:01", "hostname": "demo-node-01",
+ "known": true, "device_id": 3, "device_hostname": "demo-node-01"}
+```
+
+- `known`: the IP is already in the CMDB (matched by mgmt IP or nic IP), carrying `device_id` / `device_hostname`; `false` means unknown
+- Simulated data
 
 ## Appendix: Configuration (environment variables)
 

@@ -12,10 +12,11 @@ __pycache__/
 *.db-journal
 *.db-wal
 *.db-shm
+backups/
 
 # ---- 前端 ----
 node_modules/
-web/frontend/dist/
+src/web/dist/
 src/cmdb/static/
 
 # ---- 环境与本地配置 ----
@@ -23,9 +24,17 @@ src/cmdb/static/
 .env.*
 secret.key
 
+# ---- 真实配置与数据(不入库) ----
+inventory.yml
+*.local.yml
+*.local.yaml
+config.local.json
+remote_payload.json
+
 # ---- IDE / 工具 ----
 .claude/
 .idea/
 .vscode/
+.taste-skill/
 *.swp
 .DS_Store

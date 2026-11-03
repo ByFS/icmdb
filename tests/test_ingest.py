@@ -49,7 +49,8 @@ def make_push(**overrides) -> DevicePush:
     hostname = overrides.pop("hostname", None)
     if hostname:
         base["os"]["hostname"] = hostname
-    base.update(overrides)  # same-name fields like mgmt override directly
+    # same-name fields like mgmt override directly
+    base.update(overrides)
     return DevicePush(**base)
 
 

@@ -13,6 +13,17 @@ from sqlmodel import Session
 from cmdb.database import init_db, make_engine, seed_admin
 
 
+@pytest.fixture(autouse=True)
+def _reset_api_key_cache():
+    """Reset the middleware's in-process api_key cache around each test: the cache
+    outlives a test's database, a stale True would leak into the next test"""
+    from cmdb.api.settings import invalidate_api_key_cache
+
+    invalidate_api_key_cache()
+    yield
+    invalidate_api_key_cache()
+
+
 @pytest.fixture()
 def engine(tmp_path):
     eng = make_engine(str(tmp_path / "test.db"))

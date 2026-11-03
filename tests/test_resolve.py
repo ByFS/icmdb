@@ -57,7 +57,8 @@ def make_push(**overrides) -> DevicePush:
     hostname = overrides.pop("hostname", None)
     if hostname:
         base["os"]["hostname"] = hostname
-    base.update(overrides)  # same-name fields like mgmt override directly
+    # same-name fields like mgmt override directly
+    base.update(overrides)
     return DevicePush(**base)
 
 
@@ -79,8 +80,10 @@ def test_apply_field_choice_new(engine):
 
         assert result["applied"] == ["mgmt.ip: 192.0.2.11 -> 192.0.2.12"]
         device = session.get(Device, pending.device_id)
-        assert device.mgmt_ip == "192.0.2.12"  # new value applied
-        assert device.serial_number == "DEMO-SN-0001"  # unselected fields unchanged
+        # new value applied
+        assert device.mgmt_ip == "192.0.2.12"
+        # unselected fields unchanged
+        assert device.serial_number == "DEMO-SN-0001"
         assert pending.status == "applied"
         assert pending.resolved_at is not None
         histories = session.exec(select(ChangeHistory)).all()
@@ -97,7 +100,8 @@ def test_apply_field_choice_old_keeps_current(engine):
         )
         result = apply_resolution(session, pending, {"mgmt.ip": "old"}, {})
 
-        assert result["applied"] == []  # current state kept, no applied changes
+        # current state kept, no applied changes
+        assert result["applied"] == []
         device = session.get(Device, pending.device_id)
         assert device.mgmt_ip == "192.0.2.11"
         assert session.exec(select(ChangeHistory)).all() == []
@@ -137,7 +141,8 @@ def test_apply_nic_removed(engine):
         assert result["applied"] == ["网卡 eth1 删除"]
         device = session.get(Device, pending.device_id)
         nics = session.exec(select(Nic).where(Nic.device_id == device.id)).all()
-        assert [n.name for n in nics] == ["eth0"]  # eth1 and its IPs deleted
+        # eth1 and its IPs deleted
+        assert [n.name for n in nics] == ["eth0"]
         ips = session.exec(select(NicIP)).all()
         assert [ip.ip for ip in ips] == ["198.51.100.11"]
 
@@ -153,7 +158,8 @@ def test_apply_nic_changed(engine):
         ])
         result = apply_resolution(session, pending, {}, {"eth0": "new"})
 
-        assert len(result["applied"]) == 2  # mac + ips entries
+        # mac + ips entries
+        assert len(result["applied"]) == 2
         device = session.get(Device, pending.device_id)
         nics = session.exec(select(Nic).where(Nic.device_id == device.id)).all()
         eth0 = next(n for n in nics if n.name == "eth0")
@@ -173,9 +179,11 @@ def test_apply_mixed_choices(engine):
                                   {"eth1": "old"})
 
         device = session.get(Device, pending.device_id)
-        assert device.serial_number == "DEMO-SN-0001"  # same as in db, choosing new has no real change
+        # same as in db, choosing new has no real change
+        assert device.serial_number == "DEMO-SN-0001"
         nics = session.exec(select(Nic).where(Nic.device_id == device.id)).all()
-        assert len(nics) == 2  # eth1 kept
+        # eth1 kept
+        assert len(nics) == 2
         assert result["applied"] == []
         assert session.exec(select(ChangeHistory)).all() == []
 
@@ -194,21 +202,26 @@ def test_history_kept_after_device_delete(engine):
         for nic in nics:
             for nip in session.exec(select(NicIP).where(NicIP.nic_id == nic.id)).all():
                 session.delete(nip)
-        session.flush()  # delete nic_ips first
+        # delete nic_ips first
+        session.flush()
         for nic in nics:
             session.delete(nic)
-        session.flush()  # then delete nics
+        # then delete nics
+        session.flush()
         for p in session.exec(
             select(PendingChange).where(PendingChange.device_id == device.id)
         ).all():
             session.delete(p)
-        session.flush()  # then delete pendings
+        # then delete pendings
+        session.flush()
         session.delete(device)
         session.commit()
 
         histories = session.exec(select(ChangeHistory)).all()
-        assert len(histories) == 1  # history still there
-        assert session.exec(select(PendingChange)).all() == []  # pendings deleted
+        # history still there
+        assert len(histories) == 1
+        # pendings deleted
+        assert session.exec(select(PendingChange)).all() == []
 
 
 def memory_slots(*slots) -> dict:
@@ -283,11 +296,13 @@ def test_apply_memory_changed(engine):
         pending = session.get(PendingChange, result["pending_change_id"])
 
         result = apply_resolution(session, pending, {}, {}, {"DIMM_A1": "new"})
-        assert len(result["applied"]) == 2  # part_number + size_gb
+        # part_number + size_gb
+        assert len(result["applied"]) == 2
         mem = session.exec(select(MemorySlot)).one()
         assert mem.part_number == "PN-B"
         assert mem.size_gb == 32
-        assert mem.serial_number == "111"  # unchanged fields kept
+        # unchanged fields kept
+        assert mem.serial_number == "111"
 
 
 def test_apply_cpu_added_and_changed(engine):

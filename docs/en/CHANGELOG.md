@@ -22,6 +22,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/), versions follow 
   `mgmt` / `hardware` / `nics[].ips` may be null (not collected does not clear existing data);
   an empty `agent.timestamp` string is treated as not collected, falling back to server receive time
 
+### Changed
+
+- **System settings save on change**: the save button is gone, the suspected-offline threshold
+  auto-saves (debounced) and the API key toggle saves the moment it is flipped, showing the key
+  list right away; audit entries are written only when a value actually changes
+
 ## v2.2.0 - 2026-09-13
 
 ### Added
