@@ -60,7 +60,7 @@ CMDB v2 链路为 `采集 → JSON → CMDB API → 存储 → UI`,系统只管�
 
 示例:1024MB → `1 GB`;16384MB → `16 GB`;81920MB(H100)→ `80 GB`;8TB → `8 TB`
 
-### 2.5 推送体结构(基准示例)
+### 2.5 推送体结构(基准示例, 模拟数据)
 
 顶层四个组:**`agent`**(信封元数据)/ **`os`**(hostname + OS 信息)/ **`mgmt`**(带外管理口)/ **`hardware`**(全部硬件)完整示例见 [PAYLOAD_EXAMPLE.md](./PAYLOAD_EXAMPLE.md)
 

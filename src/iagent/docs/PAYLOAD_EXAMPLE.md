@@ -1,5 +1,6 @@
 # iagent 推送体示例
 
+> **本文档示例为模拟数据**(主机名, 序列号,MAC,IP,UUID 等皆为虚构)
 > 推送到 `POST /api/v1/devices` 的 JSON 基准层级与字段定义见 [DEVELOPMENT_PLAN.md](./DEVELOPMENT_PLAN.md)
 > 命名原则: 同名必同义(整机 SN 为 `chassis_serial_number`,条目级 SN 为 `serial_number`)
 
