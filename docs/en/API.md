@@ -483,6 +483,7 @@ Returns `{"offline_threshold_hours": 24, "api_key_enabled": false}` (the suspect
 
 Admin only (others get 403). Request body `{"offline_threshold_hours": 24, "api_key_enabled": false}`,
 threshold value range 1 ~ 8760, invalid values get 422; `api_key_enabled` is optional and kept unchanged when omitted.
+An audit entry is written only for the field that actually changed (the settings page auto-saves, one request may touch a single field).
 When enabled, collector pushes must carry a valid key (see [API keys](#12-api-keys)).
 
 ## 9. User Login
