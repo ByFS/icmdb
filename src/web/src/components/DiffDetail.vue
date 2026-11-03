@@ -6,12 +6,12 @@
       <h4 class="section-title">主机字段</h4>
       <el-table :data="diff.fields" border size="small">
         <el-table-column resizable prop="field" label="字段" width="170" show-overflow-tooltip/>
-        <el-table-column resizable label="旧值(库中)" :min-width="diffWidths.fields.old" show-overflow-tooltip>
+        <el-table-column resizable label="旧值(库中)" width="240" show-overflow-tooltip>
           <template #default="{ row }">
             <span class="old-val mono">{{ fmtValue(row.field, row.old) }}</span>
           </template>
         </el-table-column>
-        <el-table-column resizable label="新值(推送)" :min-width="diffWidths.fields.new" show-overflow-tooltip>
+        <el-table-column resizable label="新值(推送)" width="240" show-overflow-tooltip>
           <template #default="{ row }">
             <span class="new-val mono">{{ fmtValue(row.field, row.new) }}</span>
           </template>
@@ -21,7 +21,7 @@
       <h4 class="section-title">网卡</h4>
       <el-table :data="diff.nics" border size="small">
         <el-table-column resizable prop="name" label="网卡" width="170" show-overflow-tooltip/>
-        <el-table-column resizable label="旧值(库中)" :min-width="diffWidths.nics.old" show-overflow-tooltip>
+        <el-table-column resizable label="旧值(库中)" width="240" show-overflow-tooltip>
           <template #default="{ row }">
             <div v-for="(c, i) in row.changes" :key="i" class="change-line mono">
               <span class="change-field">{{ fieldLabel(c.field) }}</span>
@@ -34,7 +34,7 @@
             <span v-if="!row.changes.length && row.kind !== 'removed'" class="muted">-</span>
           </template>
         </el-table-column>
-        <el-table-column resizable label="新值(推送)" :min-width="diffWidths.nics.new" show-overflow-tooltip>
+        <el-table-column resizable label="新值(推送)" width="240" show-overflow-tooltip>
           <template #default="{ row }">
             <div v-for="(c, i) in row.changes" :key="i" class="val-line mono">
               <span class="new-val">{{ fmtValue(c.field, c.new) }}</span>
@@ -55,7 +55,7 @@
         <h4 class="section-title">内存</h4>
         <el-table :data="diff.memory" border size="small">
           <el-table-column resizable prop="slot" label="槽位" width="170" show-overflow-tooltip/>
-          <el-table-column resizable label="旧值(库中)" :min-width="diffWidths.memory.old" show-overflow-tooltip>
+          <el-table-column resizable label="旧值(库中)" width="240" show-overflow-tooltip>
             <template #default="{ row }">
               <div v-for="(c, i) in row.changes" :key="i" class="change-line mono">
                 <span class="change-field">{{ fieldLabel(c.field) }}</span>
@@ -68,7 +68,7 @@
               <span v-if="!row.changes.length && row.kind !== 'removed'" class="muted">-</span>
             </template>
           </el-table-column>
-          <el-table-column resizable label="新值(推送)" :min-width="diffWidths.memory.new" show-overflow-tooltip>
+          <el-table-column resizable label="新值(推送)" width="240" show-overflow-tooltip>
             <template #default="{ row }">
               <div v-for="(c, i) in row.changes" :key="i" class="val-line mono">
                 <span class="new-val">{{ fmtValue(c.field, c.new) }}</span>
@@ -90,7 +90,7 @@
         <h4 class="section-title">CPU</h4>
         <el-table :data="diff.cpus" border size="small">
           <el-table-column resizable prop="slot" label="槽位" width="170" show-overflow-tooltip/>
-          <el-table-column resizable label="旧值(库中)" :min-width="diffWidths.cpus.old" show-overflow-tooltip>
+          <el-table-column resizable label="旧值(库中)" width="240" show-overflow-tooltip>
             <template #default="{ row }">
               <div v-for="(c, i) in row.changes" :key="i" class="change-line mono">
                 <span class="change-field">{{ fieldLabel(c.field) }}</span>
@@ -103,7 +103,7 @@
               <span v-if="!row.changes.length && row.kind !== 'removed'" class="muted">-</span>
             </template>
           </el-table-column>
-          <el-table-column resizable label="新值(推送)" :min-width="diffWidths.cpus.new" show-overflow-tooltip>
+          <el-table-column resizable label="新值(推送)" width="240" show-overflow-tooltip>
             <template #default="{ row }">
               <div v-for="(c, i) in row.changes" :key="i" class="val-line mono">
                 <span class="new-val">{{ fmtValue(c.field, c.new) }}</span>
@@ -127,7 +127,7 @@
           <el-table-column resizable label="SN" width="170" show-overflow-tooltip>
             <template #default="{ row }">{{ ident(row, ['manufacturer', 'model', 'type'], 'serial_number', 'SN') }}</template>
           </el-table-column>
-          <el-table-column resizable label="旧值(库中)" :min-width="diffWidths.disks.old" show-overflow-tooltip>
+          <el-table-column resizable label="旧值(库中)" width="240" show-overflow-tooltip>
             <template #default="{ row }">
               <div v-for="(c, i) in row.changes" :key="i" class="change-line mono">
                 <span class="change-field">{{ fieldLabel(c.field) }}</span>
@@ -140,7 +140,7 @@
               <span v-if="!row.changes.length && row.kind !== 'removed'" class="muted">-</span>
             </template>
           </el-table-column>
-          <el-table-column resizable label="新值(推送)" :min-width="diffWidths.disks.new" show-overflow-tooltip>
+          <el-table-column resizable label="新值(推送)" width="240" show-overflow-tooltip>
             <template #default="{ row }">
               <div v-for="(c, i) in row.changes" :key="i" class="val-line mono">
                 <span class="new-val">{{ fmtValue(c.field, c.new) }}</span>
@@ -164,7 +164,7 @@
           <el-table-column resizable label="SN" width="170" show-overflow-tooltip>
             <template #default="{ row }">{{ ident(row, ['manufacturer', 'model'], 'serial_number', 'SN') }}</template>
           </el-table-column>
-          <el-table-column resizable label="旧值(库中)" :min-width="diffWidths.psus.old" show-overflow-tooltip>
+          <el-table-column resizable label="旧值(库中)" width="240" show-overflow-tooltip>
             <template #default="{ row }">
               <div v-for="(c, i) in row.changes" :key="i" class="change-line mono">
                 <span class="change-field">{{ fieldLabel(c.field) }}</span>
@@ -177,7 +177,7 @@
               <span v-if="!row.changes.length && row.kind !== 'removed'" class="muted">-</span>
             </template>
           </el-table-column>
-          <el-table-column resizable label="新值(推送)" :min-width="diffWidths.psus.new" show-overflow-tooltip>
+          <el-table-column resizable label="新值(推送)" width="240" show-overflow-tooltip>
             <template #default="{ row }">
               <div v-for="(c, i) in row.changes" :key="i" class="val-line mono">
                 <span class="new-val">{{ fmtValue(c.field, c.new) }}</span>
@@ -201,7 +201,7 @@
           <el-table-column resizable label="UUID" width="170" show-overflow-tooltip>
             <template #default="{ row }">{{ ident(row, ['name'], 'uuid', 'UUID') }}</template>
           </el-table-column>
-          <el-table-column resizable label="旧值(库中)" :min-width="diffWidths.gpus.old" show-overflow-tooltip>
+          <el-table-column resizable label="旧值(库中)" width="240" show-overflow-tooltip>
             <template #default="{ row }">
               <div v-for="(c, i) in row.changes" :key="i" class="change-line mono">
                 <span class="change-field">{{ fieldLabel(c.field) }}</span>
@@ -214,7 +214,7 @@
               <span v-if="!row.changes.length && row.kind !== 'removed'" class="muted">-</span>
             </template>
           </el-table-column>
-          <el-table-column resizable label="新值(推送)" :min-width="diffWidths.gpus.new" show-overflow-tooltip>
+          <el-table-column resizable label="新值(推送)" width="240" show-overflow-tooltip>
             <template #default="{ row }">
               <div v-for="(c, i) in row.changes" :key="i" class="val-line mono">
                 <span class="new-val">{{ fmtValue(c.field, c.new) }}</span>
@@ -237,57 +237,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
 import { PendingChange } from '../api'
-import { fitMinWidths, longestLine, FitCol } from '../utils/fit'
 import { fieldLabel, fmtValue } from '../utils/diff'
 
 const props = defineProps<{
   diff: PendingChange['diff'] | null
 }>()
-
-// Column width auto-fit: compute min-width from the longest content per column, fully visible by default
-type DiffEntry = {
-  kind: string
-  old: Record<string, unknown> | null
-  new: Record<string, unknown> | null
-  changes?: { field: string; old: unknown; new: unknown }[]
-}
-const diffWidths = computed(() => {
-  const d = props.diff
-  const oldCol: FitCol<DiffEntry> = {
-    key: 'old',
-    label: '旧值(库中)',
-    text: (r) =>
-      longestLine([
-        ...(r.changes ?? []).map((c) => `${fieldLabel(c.field)}: ${fmtValue(c.field, c.old)}`),
-        '-',
-      ]),
-  }
-  const newCol: FitCol<DiffEntry> = {
-    key: 'new',
-    label: '新值(推送)',
-    text: (r) =>
-      longestLine([
-        ...(r.changes ?? []).map((c) => `${fieldLabel(c.field)}: ${fmtValue(c.field, c.new)}`),
-        '-',
-      ]),
-  }
-  const kindCol: FitCol<DiffEntry> = { key: 'kind', label: '类型' }
-  return {
-    fields: fitMinWidths(d?.fields ?? [], [
-      { key: 'field', label: '字段' },
-      { key: 'old', label: '旧值(库中)' },
-      { key: 'new', label: '新值(推送)' },
-    ]),
-    nics: fitMinWidths(d?.nics ?? [], [{ key: 'name', label: '网卡' }, oldCol, newCol, kindCol]),
-    memory: fitMinWidths(d?.memory ?? [], [{ key: 'slot', label: '槽位' }, oldCol, newCol, kindCol]),
-    cpus: fitMinWidths(d?.cpus ?? [], [{ key: 'slot', label: '槽位' }, oldCol, newCol, kindCol]),
-    disks: fitMinWidths(d?.disks ?? [], [{ key: 'serial_number', label: 'SN' }, oldCol, newCol, kindCol]),
-    psus: fitMinWidths(d?.psus ?? [], [{ key: 'serial_number', label: 'SN' }, oldCol, newCol, kindCol]),
-    gpus: fitMinWidths(d?.gpus ?? [], [{ key: 'uuid', label: 'UUID' }, oldCol, newCol, kindCol]),
-  }
-})
 
 const kindLabel: Record<string, string> = {
   added: '新增',
