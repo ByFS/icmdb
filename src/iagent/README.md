@@ -33,4 +33,5 @@ cd ansible && ansible-playbook -i inventory.yml playbook.yml
 - [开发计划](docs/DEVELOPMENT_PLAN.md)--需求总结, 分阶段计划, 风险与里程碑
 - [总体架构](docs/ARCHITECTURE.md)--系统全景, 数据流, 部署架构, 目录结构
 - [详细设计](docs/DESIGN.md)--代码级设计, 模块接口与类型定义
+- [零命令采集方案](docs/NO-COMMAND-COLLECTION.md)--内核接口为主的字段矩阵与实施阶段
 - [推送体基准](docs/PAYLOAD_EXAMPLE.md)--推送 JSON 完整示例与关键规则
