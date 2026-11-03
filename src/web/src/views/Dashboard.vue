@@ -14,13 +14,13 @@
       </div>
       <div class="kpi">
         <div class="kpi-label">活跃</div>
-        <div class="kpi-value" :class="{ zero: !activeCount }">
+        <div class="kpi-value kpi-positive" :class="{ zero: !activeCount }">
           {{ activeCount === null ? '-' : activeCount }}
         </div>
       </div>
       <div class="kpi">
         <div class="kpi-label">疑似下线</div>
-        <div class="kpi-value" :class="{ zero: !offlineCount }">
+        <div class="kpi-value kpi-warning" :class="{ zero: !offlineCount }">
           {{ offlineCount === null ? '-' : offlineCount }}
         </div>
       </div>
@@ -200,7 +200,16 @@ onMounted(async () => {
   color: var(--hue);
 }
 
-.zero {
+/* status semantics: colour says what the number means, not decoration */
+.kpi-positive {
+  color: var(--positive);
+}
+
+.kpi-warning {
+  color: #c2410c;
+}
+
+.kpi-value.zero {
   color: var(--muted);
 }
 

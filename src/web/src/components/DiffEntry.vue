@@ -18,9 +18,13 @@
       <template v-if="entry.kind === 'changed'">
         <div v-for="c in entry.changes ?? []" :key="c.field" class="change-row">
           <span class="fname">{{ fieldLabel(c.field) }}</span>
-          <span class="old-val mono">{{ fmtValue(c.field, c.old) }}</span>
+          <span class="old-val mono" :class="{ 'is-rejected': modelValue === 'new' }">
+            <span class="side-tag">旧</span>{{ fmtValue(c.field, c.old) }}
+          </span>
           <span class="arrow">→</span>
-          <span class="new-val mono">{{ fmtValue(c.field, c.new) }}</span>
+          <span class="new-val mono" :class="{ 'is-rejected': modelValue === 'old' }">
+            <span class="side-tag">新</span>{{ fmtValue(c.field, c.new) }}
+          </span>
         </div>
         <div v-if="!(entry.changes ?? []).length" class="change-row">
           <span class="empty">-</span>
@@ -127,7 +131,20 @@ const headText = computed(() => {
   white-space: nowrap;
 }
 .entry-body {
-  padding: 10px 16px 12px;
+  /* 15px left padding + the 1px entry border keeps values aligned with the field rows */
+  padding: 10px 15px 12px;
+}
+/* old/new mini labels inside the value chips */
+.side-tag {
+  display: inline-block;
+  font-size: 10px;
+  line-height: 14px;
+  padding: 0 4px;
+  margin-right: 4px;
+  border-radius: 3px;
+  border: 1px solid currentColor;
+  opacity: 0.75;
+  vertical-align: 1px;
 }
 .is-added .entry-body {
   background: #f0f9eb;
@@ -152,9 +169,8 @@ const headText = computed(() => {
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
 }
 .old-val {
-  color: var(--el-color-danger);
-  background: #fef0f0;
-  text-decoration: line-through;
+  color: var(--el-text-color-regular);
+  background: #f2f2f2;
   padding: 1px 6px;
   border-radius: 3px;
 }
@@ -163,6 +179,12 @@ const headText = computed(() => {
   background: #f0f9eb;
   padding: 1px 6px;
   border-radius: 3px;
+}
+/* the side the admin rejected reads as a red strikethrough */
+.is-rejected {
+  color: var(--el-color-danger);
+  background: #fef0f0;
+  text-decoration: line-through;
 }
 .arrow {
   color: var(--el-text-color-secondary);
