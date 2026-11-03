@@ -52,8 +52,8 @@
             <template #title>
               <span class="sec-title">主机字段 ({{ pending.diff.fields.length }})</span>
             </template>
-            <div v-for="f in pending.diff.fields" :key="f.field" class="field-row">
-              <span class="fname">{{ fieldLabel(f.field) }}</span>
+            <div v-for="f in pending.diff.fields" :key="f.field" class="diff-row">
+              <span class="diff-label">{{ fieldLabel(f.field) }}</span>
               <span class="old-val mono" :class="{ 'is-rejected': fieldChoices[f.field] === 'new' }">
                 <span class="side-tag">旧</span>{{ fmtValue(f.field, f.old) }}
               </span>
@@ -422,20 +422,21 @@ async function submit() {
 .sections :deep(.el-collapse-item__content) {
   padding: 4px 10px 16px;
 }
-.field-row {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  /* the hardware entries sit in a bordered box (1px border + 15px body padding),
-     the bare field rows need the same 16px inset to align value chips */
-  padding: 6px 0 6px 16px;
-  font-size: 13px;
+.old-val {
+  color: var(--el-text-color-regular);
+  background: #f2f2f2;
+  padding: 1px 6px;
+  border-radius: 3px;
+  /* right edge docks to the old-value column line of the shared .diff-row grid */
+  justify-self: end;
 }
-.fname {
-  flex-shrink: 0;
-  width: 72px;
-  color: var(--el-text-color-secondary);
-  text-align: right;
+.new-val {
+  color: var(--el-color-success);
+  background: #f0f9eb;
+  padding: 1px 6px;
+  border-radius: 3px;
+  /* left edge docks to the new-value column line of the shared .diff-row grid */
+  justify-self: start;
 }
 /* old/new mini labels inside the value chips */
 .side-tag {

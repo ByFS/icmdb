@@ -204,6 +204,23 @@ a.link:hover {
   color: var(--hue);
 }
 
+/* Unified conflict-diff row grid: every section shares this one format, so the
+   label / old-value / new-value column lines align across the whole page.
+   Columns: label 96 | old value 240 | arrow 20 | new value 240 | choice (auto) */
+.diff-row {
+  display: grid;
+  grid-template-columns: 96px 240px 20px 240px auto;
+  column-gap: 8px;
+  align-items: baseline;
+  padding: 3px 0;
+  font-size: 13px;
+}
+
+.diff-label {
+  text-align: right;
+  color: var(--muted);
+}
+
 /* Pagination: quiet */
 .el-pagination {
   --el-pagination-button-bg-color: transparent;

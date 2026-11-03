@@ -16,8 +16,8 @@
     <div class="entry-body">
       <!-- changed: red/green diff of the changed fields; identity + unchanged fields are in the head line -->
       <template v-if="entry.kind === 'changed'">
-        <div v-for="c in entry.changes ?? []" :key="c.field" class="change-row">
-          <span class="fname">{{ fieldLabel(c.field) }}</span>
+        <div v-for="c in entry.changes ?? []" :key="c.field" class="diff-row">
+          <span class="diff-label">{{ fieldLabel(c.field) }}</span>
           <span class="old-val mono" :class="{ 'is-rejected': modelValue === 'new' }">
             <span class="side-tag">旧</span>{{ fmtValue(c.field, c.old) }}
           </span>
@@ -26,15 +26,15 @@
             <span class="side-tag">新</span>{{ fmtValue(c.field, c.new) }}
           </span>
         </div>
-        <div v-if="!(entry.changes ?? []).length" class="change-row">
-          <span class="empty">-</span>
+        <div v-if="!(entry.changes ?? []).length" class="diff-row">
+          <span class="diff-label">-</span>
         </div>
       </template>
       <!-- added/removed: full key-value display -->
       <template v-else>
-        <div v-for="(row, i) in rows" :key="i" class="change-row">
-          <span class="fname">{{ row.label }}</span>
-          <span class="mono" :class="entry.kind === 'added' ? 'new-val' : 'old-val'">{{ row.value }}</span>
+        <div v-for="(row, i) in rows" :key="i" class="diff-row">
+          <span class="diff-label">{{ row.label }}</span>
+          <span class="mono kind-val" :class="entry.kind === 'added' ? 'new-val' : 'old-val'">{{ row.value }}</span>
         </div>
       </template>
     </div>
@@ -110,29 +110,30 @@ const headText = computed(() => {
 
 <style scoped>
 .diff-entry {
-  border: 1px solid var(--el-border-color-lighter);
-  border-radius: 6px;
-  margin-bottom: 10px;
-  overflow: hidden;
+  margin-bottom: 12px;
 }
 .entry-head {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 14px;
-  background: var(--el-fill-color-light);
+  padding: 2px 0 6px;
 }
 .identity {
-  font-weight: bold;
+  font-weight: 500;
   flex: 1;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+/* rows carry the shared .diff-row grid; the body adds no inset of its own */
 .entry-body {
-  /* 15px left padding + the 1px entry border keeps values aligned with the field rows */
-  padding: 10px 15px 12px;
+  padding: 0;
+}
+/* added entries have only a new value: let it span the whole value area */
+.is-added .entry-body .kind-val {
+  grid-column: 2 / 5;
+  justify-self: start;
 }
 /* old/new mini labels inside the value chips */
 .side-tag {
@@ -146,26 +147,6 @@ const headText = computed(() => {
   opacity: 0.75;
   vertical-align: 1px;
 }
-.is-added .entry-body {
-  background: #f0f9eb;
-}
-.is-removed .entry-body {
-  background: #fef0f0;
-}
-.change-row {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  /* no horizontal padding: the entry body inset already aligns with the field rows */
-  padding: 3px 0;
-  font-size: 13px;
-}
-.fname {
-  flex-shrink: 0;
-  width: 72px;
-  color: var(--el-text-color-secondary);
-  text-align: right;
-}
 .mono {
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
 }
@@ -174,12 +155,16 @@ const headText = computed(() => {
   background: #f2f2f2;
   padding: 1px 6px;
   border-radius: 3px;
+  /* right edge docks to the old-value column line of the shared .diff-row grid */
+  justify-self: end;
 }
 .new-val {
   color: var(--el-color-success);
   background: #f0f9eb;
   padding: 1px 6px;
   border-radius: 3px;
+  /* left edge docks to the new-value column line of the shared .diff-row grid */
+  justify-self: start;
 }
 /* the side the admin rejected reads as a red strikethrough */
 .is-rejected {
@@ -190,8 +175,5 @@ const headText = computed(() => {
 .arrow {
   color: var(--el-text-color-secondary);
   flex-shrink: 0;
-}
-.empty {
-  color: var(--el-text-color-secondary);
 }
 </style>
