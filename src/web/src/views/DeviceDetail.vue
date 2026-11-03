@@ -41,10 +41,9 @@
           {{ device.mgmt_mac || '-' }}
         </el-descriptions-item>
         <el-descriptions-item label="管理 IP">
-          {{ device.mgmt_ip || '-' }}
-        </el-descriptions-item>
-        <el-descriptions-item label="子网前缀">
-          {{ device.mgmt_prefix_length ?? '-' }}
+          <span class="mono">
+            {{ device.mgmt_ip || '-' }}{{ device.mgmt_ip && device.mgmt_prefix_length != null ? '/' + device.mgmt_prefix_length : '' }}
+          </span>
         </el-descriptions-item>
         <el-descriptions-item label="用途">
           <el-input
